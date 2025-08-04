@@ -76,6 +76,21 @@ public:
   ~Adafruit_BQ25628E();
   bool begin(uint8_t i2c_addr = BQ25628E_DEFAULT_ADDR, TwoWire *wire = &Wire);
 
+  bool setChargeCurrentLimitA(float current_a);
+  float getChargeCurrentLimitA();
+
+  bool setChargeVoltageLimitV(float voltage_v);
+  float getChargeVoltageLimitV();
+
+  bool setInputCurrentLimitA(float current_a);
+  float getInputCurrentLimitA();
+
+  bool setInputVoltageLimitV(float voltage_v);
+  float getInputVoltageLimitV();
+
+  bool setMinimalSystemVoltageV(float voltage_v);
+  float getMinimalSystemVoltageV();
+
 private:
   Adafruit_I2CDevice *i2c_dev; /*!< Pointer to I2C bus interface */
 };
