@@ -38,6 +38,46 @@ typedef enum {
   BQ25628E_WATCHDOG_200S = 0b11      /*!< 200 second watchdog */
 } bq25628e_watchdog_t;
 
+/*!
+ * @brief Converter switching frequency settings
+ */
+typedef enum {
+  BQ25628E_CONV_FREQ_1500KHZ = 0b00, /*!< 1.5 MHz nominal */
+  BQ25628E_CONV_FREQ_1350KHZ = 0b01, /*!< 1.35 MHz (-10%) */
+  BQ25628E_CONV_FREQ_1650KHZ = 0b10, /*!< 1.65 MHz (+10%) */
+  BQ25628E_CONV_FREQ_RESERVED = 0b11 /*!< Reserved */
+} bq25628e_conv_freq_t;
+
+/*!
+ * @brief BATFET control settings
+ */
+typedef enum {
+  BQ25628E_BATFET_NORMAL = 0b00,    /*!< Normal operation */
+  BQ25628E_BATFET_SHUTDOWN = 0b01,  /*!< Shutdown mode */
+  BQ25628E_BATFET_SHIP = 0b10,      /*!< Ship mode */
+  BQ25628E_BATFET_RESET = 0b11      /*!< System power reset */
+} bq25628e_batfet_ctrl_t;
+
+/*!
+ * @brief Charge rate settings
+ */
+typedef enum {
+  BQ25628E_CHARGE_RATE_1C = 0b00, /*!< 1C charge rate */
+  BQ25628E_CHARGE_RATE_2C = 0b01, /*!< 2C charge rate */
+  BQ25628E_CHARGE_RATE_4C = 0b10, /*!< 4C charge rate */
+  BQ25628E_CHARGE_RATE_6C = 0b11  /*!< 6C charge rate */
+} bq25628e_charge_rate_t;
+
+/*!
+ * @brief Thermistor current settings for cool/warm zones
+ */
+typedef enum {
+  BQ25628E_THERM_CURR_SUSPEND = 0b00, /*!< Charge suspended */
+  BQ25628E_THERM_CURR_20PCT = 0b01,   /*!< Set ICHG to 20% */
+  BQ25628E_THERM_CURR_40PCT = 0b10,   /*!< Set ICHG to 40% */
+  BQ25628E_THERM_CURR_UNCHANGED = 0b11 /*!< ICHG unchanged */
+} bq25628e_therm_curr_t;
+
 /*! Register addresses for the BQ25628E */
 #define BQ25628E_REG_CHARGE_CURRENT_LIMIT 0x02
 #define BQ25628E_REG_CHARGE_VOLTAGE_LIMIT 0x04
@@ -144,6 +184,38 @@ public:
 
   bool setWatchdog(bq25628e_watchdog_t setting);
   bq25628e_watchdog_t getWatchdog();
+
+  bool reset();
+
+  bool setThermalRegulation(bool temp_120c);
+  bool getThermalRegulation();
+
+  bool setConverterFrequency(bq25628e_conv_freq_t frequency);
+  bq25628e_conv_freq_t getConverterFrequency();
+
+  bool setVBUSOvervoltage(bool high_threshold);
+  bool getVBUSOvervoltage();
+
+  bool setBATFETcontrol(bq25628e_batfet_ctrl_t control);
+  bq25628e_batfet_ctrl_t getBATFETcontrol();
+
+  bool setPeakBattDischarge(bool peak_12a);
+  bool getPeakBattDischarge();
+
+  bool setVBatUVLO(bool low_threshold);
+  bool getVBatUVLO();
+
+  bool setChargeRate(bq25628e_charge_rate_t rate);
+  bq25628e_charge_rate_t getChargeRate();
+
+  bool setIgnoreThermistor(bool ignore);
+  bool getIgnoreThermistor();
+
+  bool setCoolThermistorCurrent(bq25628e_therm_curr_t setting);
+  bq25628e_therm_curr_t getCoolThermistorCurrent();
+
+  bool setWarmThermistorCurrent(bq25628e_therm_curr_t setting);
+  bq25628e_therm_curr_t getWarmThermistorCurrent();
 
 private:
   Adafruit_I2CDevice *i2c_dev; /*!< Pointer to I2C bus interface */

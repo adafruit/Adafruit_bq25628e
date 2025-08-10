@@ -687,3 +687,269 @@ bq25628e_watchdog_t Adafruit_BQ25628E::getWatchdog() {
   
   return (bq25628e_watchdog_t)watchdog_bits.read();
 }
+
+/*!
+ *    @brief  Resets registers to default values and resets timer
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::reset() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits reg_rst_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 7);
+  
+  // Set reset bit
+  if (!reg_rst_bit.write(1)) {
+    return false;
+  }
+  
+  // Wait for bit to clear (indicates reset complete)
+  uint32_t timeout = millis() + 1000; // 1 second timeout
+  while (millis() < timeout) {
+    if (reg_rst_bit.read() == 0) {
+      return true; // Reset completed
+    }
+    delay(1);
+  }
+  
+  return false; // Timeout - reset may have failed
+}
+
+/*!
+ *    @brief  Sets thermal regulation threshold
+ *    @param  temp_120c
+ *            True for 120°C threshold, false for 60°C threshold
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setThermalRegulation(bool temp_120c) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits treg_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 6);
+  
+  return treg_bit.write(temp_120c ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets thermal regulation threshold setting
+ *    @return True if 120°C threshold, false if 60°C threshold
+ */
+bool Adafruit_BQ25628E::getThermalRegulation() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits treg_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 6);
+  
+  return treg_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets converter switching frequency
+ *    @param  frequency
+ *            Frequency setting from bq25628e_conv_freq_t enum
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setConverterFrequency(bq25628e_conv_freq_t frequency) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits conv_freq_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 4);
+  
+  return conv_freq_bits.write((uint8_t)frequency);
+}
+
+/*!
+ *    @brief  Gets converter switching frequency setting
+ *    @return Current frequency setting
+ */
+bq25628e_conv_freq_t Adafruit_BQ25628E::getConverterFrequency() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits conv_freq_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 4);
+  
+  return (bq25628e_conv_freq_t)conv_freq_bits.read();
+}
+
+/*!
+ *    @brief  Sets VBUS overvoltage protection threshold
+ *    @param  high_threshold
+ *            True for 18.5V threshold, false for 6.3V threshold
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setVBUSOvervoltage(bool high_threshold) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits vbus_ovp_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 0);
+  
+  return vbus_ovp_bit.write(high_threshold ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets VBUS overvoltage protection threshold setting
+ *    @return True if 18.5V threshold, false if 6.3V threshold
+ */
+bool Adafruit_BQ25628E::getVBUSOvervoltage() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_1, 1);
+  Adafruit_BusIO_RegisterBits vbus_ovp_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 0);
+  
+  return vbus_ovp_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets BATFET control mode
+ *    @param  control
+ *            BATFET control setting from bq25628e_batfet_ctrl_t enum
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setBATFETcontrol(bq25628e_batfet_ctrl_t control) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_2, 1);
+  Adafruit_BusIO_RegisterBits batfet_ctrl_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 0);
+  
+  return batfet_ctrl_bits.write((uint8_t)control);
+}
+
+/*!
+ *    @brief  Gets BATFET control mode setting
+ *    @return Current BATFET control setting
+ */
+bq25628e_batfet_ctrl_t Adafruit_BQ25628E::getBATFETcontrol() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_2, 1);
+  Adafruit_BusIO_RegisterBits batfet_ctrl_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 0);
+  
+  return (bq25628e_batfet_ctrl_t)batfet_ctrl_bits.read();
+}
+
+/*!
+ *    @brief  Sets battery discharge peak current protection
+ *    @param  peak_12a
+ *            True for 12A peak current, false for 6A peak current
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setPeakBattDischarge(bool peak_12a) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_3, 1);
+  Adafruit_BusIO_RegisterBits ibat_pk_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 6);
+  
+  return ibat_pk_bits.write(peak_12a ? 0b11 : 0b10);
+}
+
+/*!
+ *    @brief  Gets battery discharge peak current protection setting
+ *    @return True if 12A peak current, false if 6A peak current
+ */
+bool Adafruit_BQ25628E::getPeakBattDischarge() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_3, 1);
+  Adafruit_BusIO_RegisterBits ibat_pk_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 6);
+  
+  uint8_t value = ibat_pk_bits.read();
+  return (value == 0b11); // 11b = 12A, 10b = 6A
+}
+
+/*!
+ *    @brief  Sets VBAT UVLO threshold
+ *    @param  low_threshold
+ *            True for 1.8V UVLO/1.85V SHORT, false for 2.2V UVLO/2.05V SHORT
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setVBatUVLO(bool low_threshold) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_3, 1);
+  Adafruit_BusIO_RegisterBits vbat_uvlo_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 5);
+  
+  return vbat_uvlo_bit.write(low_threshold ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets VBAT UVLO threshold setting
+ *    @return True if 1.8V UVLO/1.85V SHORT, false if 2.2V UVLO/2.05V SHORT
+ */
+bool Adafruit_BQ25628E::getVBatUVLO() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_3, 1);
+  Adafruit_BusIO_RegisterBits vbat_uvlo_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 5);
+  
+  return vbat_uvlo_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets charge rate for fast charge stage
+ *    @param  rate
+ *            Charge rate setting from bq25628e_charge_rate_t enum
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setChargeRate(bq25628e_charge_rate_t rate) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_3, 1);
+  Adafruit_BusIO_RegisterBits chg_rate_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 0);
+  
+  return chg_rate_bits.write((uint8_t)rate);
+}
+
+/*!
+ *    @brief  Gets charge rate setting
+ *    @return Current charge rate setting
+ */
+bq25628e_charge_rate_t Adafruit_BQ25628E::getChargeRate() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_3, 1);
+  Adafruit_BusIO_RegisterBits chg_rate_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 0);
+  
+  return (bq25628e_charge_rate_t)chg_rate_bits.read();
+}
+
+/*!
+ *    @brief  Sets thermistor feedback ignore
+ *    @param  ignore
+ *            True to ignore TS feedback, false to use TS feedback
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setIgnoreThermistor(bool ignore) {
+  Adafruit_BusIO_Register ntc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_NTC_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits ts_ignore_bit = Adafruit_BusIO_RegisterBits(&ntc_control_reg, 1, 7);
+  
+  return ts_ignore_bit.write(ignore ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets thermistor feedback ignore setting
+ *    @return True if TS feedback ignored, false if TS feedback used
+ */
+bool Adafruit_BQ25628E::getIgnoreThermistor() {
+  Adafruit_BusIO_Register ntc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_NTC_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits ts_ignore_bit = Adafruit_BusIO_RegisterBits(&ntc_control_reg, 1, 7);
+  
+  return ts_ignore_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets thermistor cool zone current setting
+ *    @param  setting
+ *            Current setting from bq25628e_therm_curr_t enum
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setCoolThermistorCurrent(bq25628e_therm_curr_t setting) {
+  Adafruit_BusIO_Register ntc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_NTC_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits ts_iset_cool_bits = Adafruit_BusIO_RegisterBits(&ntc_control_reg, 2, 0);
+  
+  return ts_iset_cool_bits.write((uint8_t)setting);
+}
+
+/*!
+ *    @brief  Gets thermistor cool zone current setting
+ *    @return Current cool zone setting
+ */
+bq25628e_therm_curr_t Adafruit_BQ25628E::getCoolThermistorCurrent() {
+  Adafruit_BusIO_Register ntc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_NTC_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits ts_iset_cool_bits = Adafruit_BusIO_RegisterBits(&ntc_control_reg, 2, 0);
+  
+  return (bq25628e_therm_curr_t)ts_iset_cool_bits.read();
+}
+
+/*!
+ *    @brief  Sets thermistor warm zone current setting
+ *    @param  setting
+ *            Current setting from bq25628e_therm_curr_t enum
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setWarmThermistorCurrent(bq25628e_therm_curr_t setting) {
+  Adafruit_BusIO_Register ntc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_NTC_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits ts_iset_warm_bits = Adafruit_BusIO_RegisterBits(&ntc_control_reg, 2, 2);
+  
+  return ts_iset_warm_bits.write((uint8_t)setting);
+}
+
+/*!
+ *    @brief  Gets thermistor warm zone current setting
+ *    @return Current warm zone setting
+ */
+bq25628e_therm_curr_t Adafruit_BQ25628E::getWarmThermistorCurrent() {
+  Adafruit_BusIO_Register ntc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_NTC_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits ts_iset_warm_bits = Adafruit_BusIO_RegisterBits(&ntc_control_reg, 2, 2);
+  
+  return (bq25628e_therm_curr_t)ts_iset_warm_bits.read();
+}

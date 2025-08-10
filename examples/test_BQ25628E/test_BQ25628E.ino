@@ -25,6 +25,13 @@ void setup() {
   
   Serial.println(F("BQ25628E Found!"));
   
+  // Reset chip to default values
+  if (bq.reset()) {
+    Serial.println(F("Reset successful"));
+  } else {
+    Serial.println(F("Reset failed"));
+  }
+  
   // Uncomment to set charge current limit to 1.0A
   // bq.setChargeCurrentLimitA(1.0);
   
@@ -197,6 +204,151 @@ void setup() {
       break;
     case BQ25628E_WATCHDOG_200S:
       Serial.println(F("200s"));
+      break;
+  }
+  
+  // Uncomment to set thermal regulation to 60°C
+  // bq.setThermalRegulation(false);
+  
+  // Test thermal regulation setting
+  bool thermal_120c = bq.getThermalRegulation();
+  Serial.print(F("Thermal regulation: "));
+  Serial.println(thermal_120c ? F("120°C") : F("60°C"));
+  
+  // Uncomment to set converter frequency to 1.35MHz
+  // bq.setConverterFrequency(BQ25628E_CONV_FREQ_1350KHZ);
+  
+  // Test converter frequency setting
+  bq25628e_conv_freq_t conv_freq = bq.getConverterFrequency();
+  Serial.print(F("Converter frequency: "));
+  switch (conv_freq) {
+    case BQ25628E_CONV_FREQ_1500KHZ:
+      Serial.println(F("1.5MHz"));
+      break;
+    case BQ25628E_CONV_FREQ_1350KHZ:
+      Serial.println(F("1.35MHz"));
+      break;
+    case BQ25628E_CONV_FREQ_1650KHZ:
+      Serial.println(F("1.65MHz"));
+      break;
+    case BQ25628E_CONV_FREQ_RESERVED:
+      Serial.println(F("Reserved"));
+      break;
+  }
+  
+  // Uncomment to set VBUS OVP to 6.3V
+  // bq.setVBUSOvervoltage(false);
+  
+  // Test VBUS overvoltage setting
+  bool vbus_high_ovp = bq.getVBUSOvervoltage();
+  Serial.print(F("VBUS OVP threshold: "));
+  Serial.println(vbus_high_ovp ? F("18.5V") : F("6.3V"));
+  
+  // Uncomment to set BATFET to ship mode (WARNING: will disconnect battery)
+  // bq.setBATFETcontrol(BQ25628E_BATFET_SHIP);
+  
+  // Test BATFET control setting
+  bq25628e_batfet_ctrl_t batfet_ctrl = bq.getBATFETcontrol();
+  Serial.print(F("BATFET control: "));
+  switch (batfet_ctrl) {
+    case BQ25628E_BATFET_NORMAL:
+      Serial.println(F("Normal"));
+      break;
+    case BQ25628E_BATFET_SHUTDOWN:
+      Serial.println(F("Shutdown"));
+      break;
+    case BQ25628E_BATFET_SHIP:
+      Serial.println(F("Ship"));
+      break;
+    case BQ25628E_BATFET_RESET:
+      Serial.println(F("Reset"));
+      break;
+  }
+  
+  // Uncomment to set peak discharge current to 6A
+  // bq.setPeakBattDischarge(false);
+  
+  // Test peak battery discharge setting
+  bool peak_12a = bq.getPeakBattDischarge();
+  Serial.print(F("Peak discharge current: "));
+  Serial.println(peak_12a ? F("12A") : F("6A"));
+  
+  // Uncomment to set VBAT UVLO to 1.8V threshold
+  // bq.setVBatUVLO(true);
+  
+  // Test VBAT UVLO setting
+  bool vbat_uvlo_low = bq.getVBatUVLO();
+  Serial.print(F("VBAT UVLO threshold: "));
+  Serial.println(vbat_uvlo_low ? F("1.8V") : F("2.2V"));
+  
+  // Uncomment to set charge rate to 2C
+  // bq.setChargeRate(BQ25628E_CHARGE_RATE_2C);
+  
+  // Test charge rate setting
+  bq25628e_charge_rate_t charge_rate = bq.getChargeRate();
+  Serial.print(F("Charge rate: "));
+  switch (charge_rate) {
+    case BQ25628E_CHARGE_RATE_1C:
+      Serial.println(F("1C"));
+      break;
+    case BQ25628E_CHARGE_RATE_2C:
+      Serial.println(F("2C"));
+      break;
+    case BQ25628E_CHARGE_RATE_4C:
+      Serial.println(F("4C"));
+      break;
+    case BQ25628E_CHARGE_RATE_6C:
+      Serial.println(F("6C"));
+      break;
+  }
+  
+  // Uncomment to ignore thermistor
+  // bq.setIgnoreThermistor(true);
+  
+  // Test thermistor ignore setting
+  bool ignore_thermistor = bq.getIgnoreThermistor();
+  Serial.print(F("Ignore thermistor: "));
+  Serial.println(ignore_thermistor ? F("true") : F("false"));
+  
+  // Uncomment to set cool thermistor current to 40%
+  // bq.setCoolThermistorCurrent(BQ25628E_THERM_CURR_40PCT);
+  
+  // Test cool thermistor current setting
+  bq25628e_therm_curr_t cool_current = bq.getCoolThermistorCurrent();
+  Serial.print(F("Cool thermistor current: "));
+  switch (cool_current) {
+    case BQ25628E_THERM_CURR_SUSPEND:
+      Serial.println(F("Suspended"));
+      break;
+    case BQ25628E_THERM_CURR_20PCT:
+      Serial.println(F("20%"));
+      break;
+    case BQ25628E_THERM_CURR_40PCT:
+      Serial.println(F("40%"));
+      break;
+    case BQ25628E_THERM_CURR_UNCHANGED:
+      Serial.println(F("Unchanged"));
+      break;
+  }
+  
+  // Uncomment to set warm thermistor current to 20%
+  // bq.setWarmThermistorCurrent(BQ25628E_THERM_CURR_20PCT);
+  
+  // Test warm thermistor current setting
+  bq25628e_therm_curr_t warm_current = bq.getWarmThermistorCurrent();
+  Serial.print(F("Warm thermistor current: "));
+  switch (warm_current) {
+    case BQ25628E_THERM_CURR_SUSPEND:
+      Serial.println(F("Suspended"));
+      break;
+    case BQ25628E_THERM_CURR_20PCT:
+      Serial.println(F("20%"));
+      break;
+    case BQ25628E_THERM_CURR_40PCT:
+      Serial.println(F("40%"));
+      break;
+    case BQ25628E_THERM_CURR_UNCHANGED:
+      Serial.println(F("Unchanged"));
       break;
   }
   
