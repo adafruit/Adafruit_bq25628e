@@ -86,8 +86,8 @@ typedef enum {
 #define BQ25628E_STATUS0_IINDPM_STAT                                       \
   (1 << 3)                                  /*!< In IINDPM/ILIM regulation \
                                              */
-#define BQ25628E_STATUS0_VSYS_STAT (1 << 4)     /*!< In VSYSMIN regulation */
-#define BQ25628E_STATUS0_TREG_STAT (1 << 5)     /*!< In thermal regulation */
+#define BQ25628E_STATUS0_VSYS_STAT (1 << 4) /*!< In VSYSMIN regulation */
+#define BQ25628E_STATUS0_TREG_STAT (1 << 5) /*!< In thermal regulation */
 #define BQ25628E_STATUS0_ADC_DONE_STAT  \
   (1 << 6) /*!< ADC conversion complete \
             */
