@@ -21,9 +21,10 @@
 #ifndef _ADAFRUIT_BQ25628E_H
 #define _ADAFRUIT_BQ25628E_H
 
-#include "Arduino.h"
 #include <Adafruit_BusIO_Register.h>
 #include <Adafruit_I2CDevice.h>
+
+#include "Arduino.h"
 
 /*! Default I2C address for the BQ25628E */
 #define BQ25628E_DEFAULT_ADDR 0x6A
@@ -52,10 +53,10 @@ typedef enum {
  * @brief BATFET control settings
  */
 typedef enum {
-  BQ25628E_BATFET_NORMAL = 0b00,    /*!< Normal operation */
-  BQ25628E_BATFET_SHUTDOWN = 0b01,  /*!< Shutdown mode */
-  BQ25628E_BATFET_SHIP = 0b10,      /*!< Ship mode */
-  BQ25628E_BATFET_RESET = 0b11      /*!< System power reset */
+  BQ25628E_BATFET_NORMAL = 0b00,   /*!< Normal operation */
+  BQ25628E_BATFET_SHUTDOWN = 0b01, /*!< Shutdown mode */
+  BQ25628E_BATFET_SHIP = 0b10,     /*!< Ship mode */
+  BQ25628E_BATFET_RESET = 0b11     /*!< System power reset */
 } bq25628e_batfet_ctrl_t;
 
 /*!
@@ -72,111 +73,130 @@ typedef enum {
  * @brief Thermistor current settings for cool/warm zones
  */
 typedef enum {
-  BQ25628E_THERM_CURR_SUSPEND = 0b00, /*!< Charge suspended */
-  BQ25628E_THERM_CURR_20PCT = 0b01,   /*!< Set ICHG to 20% */
-  BQ25628E_THERM_CURR_40PCT = 0b10,   /*!< Set ICHG to 40% */
+  BQ25628E_THERM_CURR_SUSPEND = 0b00,  /*!< Charge suspended */
+  BQ25628E_THERM_CURR_20PCT = 0b01,    /*!< Set ICHG to 20% */
+  BQ25628E_THERM_CURR_40PCT = 0b10,    /*!< Set ICHG to 40% */
   BQ25628E_THERM_CURR_UNCHANGED = 0b11 /*!< ICHG unchanged */
 } bq25628e_therm_curr_t;
 
 /*! Status register bit flags for REG0x1D_Charger_Status_0 */
-#define BQ25628E_STATUS0_WD_STAT        (1 << 0)  /*!< WD timer expired */
+#define BQ25628E_STATUS0_WD_STAT (1 << 0)         /*!< WD timer expired */
 #define BQ25628E_STATUS0_SAFETY_TMR_STAT (1 << 1) /*!< Safety timer expired */
-#define BQ25628E_STATUS0_VINDPM_STAT    (1 << 2)  /*!< In VINDPM regulation */
-#define BQ25628E_STATUS0_IINDPM_STAT    (1 << 3)  /*!< In IINDPM/ILIM regulation */
-#define BQ25628E_STATUS0_VSYS_STAT      (1 << 4)  /*!< In VSYSMIN regulation */
-#define BQ25628E_STATUS0_TREG_STAT      (1 << 5)  /*!< In thermal regulation */
-#define BQ25628E_STATUS0_ADC_DONE_STAT  (1 << 6)  /*!< ADC conversion complete */
+#define BQ25628E_STATUS0_VINDPM_STAT (1 << 2)     /*!< In VINDPM regulation */
+#define BQ25628E_STATUS0_IINDPM_STAT (1 << 3)   /*!< In IINDPM/ILIM regulation \
+                                                 */
+#define BQ25628E_STATUS0_VSYS_STAT (1 << 4)     /*!< In VSYSMIN regulation */
+#define BQ25628E_STATUS0_TREG_STAT (1 << 5)     /*!< In thermal regulation */
+#define BQ25628E_STATUS0_ADC_DONE_STAT (1 << 6) /*!< ADC conversion complete \
+                                                 */
 
 /*! Status register bit masks for REG0x1E_Charger_Status_1 */
-#define BQ25628E_STATUS1_VBUS_STAT_MASK  (0x07)    /*!< VBUS status mask bits 2:0 */
-#define BQ25628E_STATUS1_CHG_STAT_MASK   (0x18)    /*!< Charge status mask bits 4:3 */
-#define BQ25628E_STATUS1_CHG_STAT_SHIFT  (3)       /*!< Charge status bit shift */
+#define BQ25628E_STATUS1_VBUS_STAT_MASK (0x07) /*!< VBUS status mask bits 2:0 \
+                                                */
+#define BQ25628E_STATUS1_CHG_STAT_MASK \
+  (0x18)                                    /*!< Charge status mask bits 4:3 */
+#define BQ25628E_STATUS1_CHG_STAT_SHIFT (3) /*!< Charge status bit shift */
 
 /*! VBUS Status values */
-#define BQ25628E_VBUS_STAT_NOT_POWERED   (0x00)    /*!< Not powered from VBUS */
-#define BQ25628E_VBUS_STAT_UNKNOWN_ADAPTER (0x04)  /*!< Unknown adapter */
+#define BQ25628E_VBUS_STAT_NOT_POWERED (0x00)     /*!< Not powered from VBUS */
+#define BQ25628E_VBUS_STAT_UNKNOWN_ADAPTER (0x04) /*!< Unknown adapter */
 
 /*! Charge Status values */
-#define BQ25628E_CHG_STAT_NOT_CHARGING   (0x00)    /*!< Not charging or terminated */
-#define BQ25628E_CHG_STAT_CHARGING       (0x01)    /*!< Trickle/Pre/Fast charge */
-#define BQ25628E_CHG_STAT_TAPER          (0x02)    /*!< Taper charge (CV mode) */
-#define BQ25628E_CHG_STAT_TOPOFF         (0x03)    /*!< Top-off timer active */
+#define BQ25628E_CHG_STAT_NOT_CHARGING (0x00) /*!< Not charging or terminated \
+                                               */
+#define BQ25628E_CHG_STAT_CHARGING (0x01)     /*!< Trickle/Pre/Fast charge */
+#define BQ25628E_CHG_STAT_TAPER (0x02)        /*!< Taper charge (CV mode) */
+#define BQ25628E_CHG_STAT_TOPOFF (0x03)       /*!< Top-off timer active */
 
 /*! Fault status register bit flags for REG0x1F_FAULT_Status_0 */
-#define BQ25628E_FAULT_VBUS_FAULT_STAT   (1 << 7)  /*!< VBUS fault (OVP/sleep) */
-#define BQ25628E_FAULT_BAT_FAULT_STAT    (1 << 6)  /*!< Battery fault (OCP/OVP) */
-#define BQ25628E_FAULT_SYS_FAULT_STAT    (1 << 5)  /*!< System fault (short/OVP) */
-#define BQ25628E_FAULT_TSHUT_STAT        (1 << 3)  /*!< Thermal shutdown */
-#define BQ25628E_FAULT_TS_STAT_MASK      (0x07)    /*!< TS status mask bits 2:0 */
+#define BQ25628E_FAULT_VBUS_FAULT_STAT (1 << 7) /*!< VBUS fault (OVP/sleep) */
+#define BQ25628E_FAULT_BAT_FAULT_STAT (1 << 6)  /*!< Battery fault (OCP/OVP) */
+#define BQ25628E_FAULT_SYS_FAULT_STAT (1 << 5)  /*!< System fault (short/OVP) \
+                                                 */
+#define BQ25628E_FAULT_TSHUT_STAT (1 << 3)      /*!< Thermal shutdown */
+#define BQ25628E_FAULT_TS_STAT_MASK (0x07)      /*!< TS status mask bits 2:0 */
 
 /*! TS Status values */
-#define BQ25628E_TS_STAT_NORMAL          (0x00)    /*!< TS Normal */
-#define BQ25628E_TS_STAT_COLD            (0x01)    /*!< TS Cold */
-#define BQ25628E_TS_STAT_HOT             (0x02)    /*!< TS Hot */
-#define BQ25628E_TS_STAT_COOL            (0x03)    /*!< TS Cool */
-#define BQ25628E_TS_STAT_WARM            (0x04)    /*!< TS Warm */
-#define BQ25628E_TS_STAT_PRECOOL         (0x05)    /*!< TS Pre-cool */
-#define BQ25628E_TS_STAT_PREWARM         (0x06)    /*!< TS Pre-warm */
-#define BQ25628E_TS_STAT_BIAS_FAULT      (0x07)    /*!< TS bias reference fault */
+#define BQ25628E_TS_STAT_NORMAL (0x00)     /*!< TS Normal */
+#define BQ25628E_TS_STAT_COLD (0x01)       /*!< TS Cold */
+#define BQ25628E_TS_STAT_HOT (0x02)        /*!< TS Hot */
+#define BQ25628E_TS_STAT_COOL (0x03)       /*!< TS Cool */
+#define BQ25628E_TS_STAT_WARM (0x04)       /*!< TS Warm */
+#define BQ25628E_TS_STAT_PRECOOL (0x05)    /*!< TS Pre-cool */
+#define BQ25628E_TS_STAT_PREWARM (0x06)    /*!< TS Pre-warm */
+#define BQ25628E_TS_STAT_BIAS_FAULT (0x07) /*!< TS bias reference fault */
 
 /*! Charger flag register bit flags for REG0x20_Charger_Flag_0 */
-#define BQ25628E_FLAG0_WD_FLAG           (1 << 0)  /*!< WD timer expired flag */
-#define BQ25628E_FLAG0_SAFETY_TMR_FLAG   (1 << 1)  /*!< Safety timer expired flag */
-#define BQ25628E_FLAG0_VINDPM_FLAG       (1 << 2)  /*!< VINDPM regulation flag */
-#define BQ25628E_FLAG0_IINDPM_FLAG       (1 << 3)  /*!< IINDPM/ILIM regulation flag */
-#define BQ25628E_FLAG0_VSYS_FLAG         (1 << 4)  /*!< VSYSMIN regulation flag */
-#define BQ25628E_FLAG0_TREG_FLAG         (1 << 5)  /*!< Thermal regulation flag */
-#define BQ25628E_FLAG0_ADC_DONE_FLAG     (1 << 6)  /*!< ADC conversion complete flag */
+#define BQ25628E_FLAG0_WD_FLAG (1 << 0) /*!< WD timer expired flag */
+#define BQ25628E_FLAG0_SAFETY_TMR_FLAG \
+  (1 << 1)                                  /*!< Safety timer expired flag */
+#define BQ25628E_FLAG0_VINDPM_FLAG (1 << 2) /*!< VINDPM regulation flag */
+#define BQ25628E_FLAG0_IINDPM_FLAG (1 << 3) /*!< IINDPM/ILIM regulation flag \
+                                             */
+#define BQ25628E_FLAG0_VSYS_FLAG (1 << 4)   /*!< VSYSMIN regulation flag */
+#define BQ25628E_FLAG0_TREG_FLAG (1 << 5)   /*!< Thermal regulation flag */
+#define BQ25628E_FLAG0_ADC_DONE_FLAG \
+  (1 << 6) /*!< ADC conversion complete flag */
 
 /*! Charger flag register bit flags for REG0x21_Charger_Flag_1 */
-#define BQ25628E_FLAG1_VBUS_FLAG         (1 << 0)  /*!< VBUS status changed flag */
-#define BQ25628E_FLAG1_CHG_FLAG          (1 << 3)  /*!< Charge status changed flag */
+#define BQ25628E_FLAG1_VBUS_FLAG (1 << 0) /*!< VBUS status changed flag */
+#define BQ25628E_FLAG1_CHG_FLAG (1 << 3)  /*!< Charge status changed flag */
 
 /*! Fault flag register bit flags for REG0x22_FAULT_Flag_0 */
-#define BQ25628E_FAULT_FLAG_VBUS_FAULT   (1 << 7)  /*!< VBUS OVP/sleep fault flag */
-#define BQ25628E_FAULT_FLAG_BAT_FAULT    (1 << 6)  /*!< Battery OCP/OVP fault flag */
-#define BQ25628E_FAULT_FLAG_SYS_FAULT    (1 << 5)  /*!< System OVP/short fault flag */
-#define BQ25628E_FAULT_FLAG_TSHUT        (1 << 3)  /*!< Thermal shutdown fault flag */
-#define BQ25628E_FAULT_FLAG_TS_CHANGED   (1 << 0)  /*!< TS status changed flag */
+#define BQ25628E_FAULT_FLAG_VBUS_FAULT \
+  (1 << 7) /*!< VBUS OVP/sleep fault flag */
+#define BQ25628E_FAULT_FLAG_BAT_FAULT \
+  (1 << 6) /*!< Battery OCP/OVP fault flag */
+#define BQ25628E_FAULT_FLAG_SYS_FAULT \
+  (1 << 5)                                 /*!< System OVP/short fault flag */
+#define BQ25628E_FAULT_FLAG_TSHUT (1 << 3) /*!< Thermal shutdown fault flag */
+#define BQ25628E_FAULT_FLAG_TS_CHANGED (1 << 0) /*!< TS status changed flag */
 
 /*! Interrupt mask register bit flags for REG0x23_Charger_Mask_0 */
-#define BQ25628E_MASK0_ADC_DONE_MASK     (1 << 6)  /*!< ADC conversion mask */
-#define BQ25628E_MASK0_TREG_MASK         (1 << 5)  /*!< Thermal regulation mask */
-#define BQ25628E_MASK0_VSYS_MASK         (1 << 4)  /*!< VSYSMIN regulation mask */
-#define BQ25628E_MASK0_IINDPM_MASK       (1 << 3)  /*!< IINDPM/ILIM regulation mask */
-#define BQ25628E_MASK0_VINDPM_MASK       (1 << 2)  /*!< VINDPM regulation mask */
-#define BQ25628E_MASK0_SAFETY_TMR_MASK   (1 << 1)  /*!< Safety timer mask */
-#define BQ25628E_MASK0_WD_MASK           (1 << 0)  /*!< Watchdog timer mask */
+#define BQ25628E_MASK0_ADC_DONE_MASK (1 << 6) /*!< ADC conversion mask */
+#define BQ25628E_MASK0_TREG_MASK (1 << 5)     /*!< Thermal regulation mask */
+#define BQ25628E_MASK0_VSYS_MASK (1 << 4)     /*!< VSYSMIN regulation mask */
+#define BQ25628E_MASK0_IINDPM_MASK (1 << 3)   /*!< IINDPM/ILIM regulation mask \
+                                               */
+#define BQ25628E_MASK0_VINDPM_MASK (1 << 2)   /*!< VINDPM regulation mask */
+#define BQ25628E_MASK0_SAFETY_TMR_MASK (1 << 1) /*!< Safety timer mask */
+#define BQ25628E_MASK0_WD_MASK (1 << 0)         /*!< Watchdog timer mask */
 
 /*! Interrupt mask register bit flags for REG0x24_Charger_Mask_1 */
-#define BQ25628E_MASK1_CHG_MASK          (1 << 3)  /*!< Charge status change mask */
-#define BQ25628E_MASK1_VBUS_MASK         (1 << 0)  /*!< VBUS status change mask */
+#define BQ25628E_MASK1_CHG_MASK (1 << 3)  /*!< Charge status change mask */
+#define BQ25628E_MASK1_VBUS_MASK (1 << 0) /*!< VBUS status change mask */
 
 /*! Interrupt mask register bit flags for REG0x25_FAULT_Mask_0 */
-#define BQ25628E_FMASK_VBUS_FAULT_MASK   (1 << 7)  /*!< VBUS fault mask */
-#define BQ25628E_FMASK_BAT_FAULT_MASK    (1 << 6)  /*!< Battery fault mask */
-#define BQ25628E_FMASK_SYS_FAULT_MASK    (1 << 5)  /*!< System fault mask */
-#define BQ25628E_FMASK_TSHUT_MASK        (1 << 3)  /*!< Thermal shutdown mask */
-#define BQ25628E_FMASK_TS_MASK           (1 << 0)  /*!< TS status change mask */
+#define BQ25628E_FMASK_VBUS_FAULT_MASK (1 << 7) /*!< VBUS fault mask */
+#define BQ25628E_FMASK_BAT_FAULT_MASK (1 << 6)  /*!< Battery fault mask */
+#define BQ25628E_FMASK_SYS_FAULT_MASK (1 << 5)  /*!< System fault mask */
+#define BQ25628E_FMASK_TSHUT_MASK (1 << 3)      /*!< Thermal shutdown mask */
+#define BQ25628E_FMASK_TS_MASK (1 << 0)         /*!< TS status change mask */
 
 /*! Combined interrupt mask positions for 32-bit interface */
-#define BQ25628E_INT_MASK_WD             (1UL << 0)   /*!< Watchdog timer interrupt */
-#define BQ25628E_INT_MASK_SAFETY_TMR     (1UL << 1)   /*!< Safety timer interrupt */
-#define BQ25628E_INT_MASK_VINDPM         (1UL << 2)   /*!< VINDPM regulation interrupt */
-#define BQ25628E_INT_MASK_IINDPM         (1UL << 3)   /*!< IINDPM/ILIM regulation interrupt */
-#define BQ25628E_INT_MASK_VSYS           (1UL << 4)   /*!< VSYSMIN regulation interrupt */
-#define BQ25628E_INT_MASK_TREG           (1UL << 5)   /*!< Thermal regulation interrupt */
-#define BQ25628E_INT_MASK_ADC_DONE       (1UL << 6)   /*!< ADC conversion interrupt */
-#define BQ25628E_INT_MASK_VBUS           (1UL << 8)   /*!< VBUS status change interrupt */
-#define BQ25628E_INT_MASK_CHG            (1UL << 11)  /*!< Charge status change interrupt */
-#define BQ25628E_INT_MASK_TS             (1UL << 16)  /*!< TS status change interrupt */
-#define BQ25628E_INT_MASK_TSHUT          (1UL << 19)  /*!< Thermal shutdown interrupt */
-#define BQ25628E_INT_MASK_SYS_FAULT      (1UL << 21)  /*!< System fault interrupt */
-#define BQ25628E_INT_MASK_BAT_FAULT      (1UL << 22)  /*!< Battery fault interrupt */
-#define BQ25628E_INT_MASK_VBUS_FAULT     (1UL << 23)  /*!< VBUS fault interrupt */
+#define BQ25628E_INT_MASK_WD (1UL << 0)         /*!< Watchdog timer interrupt */
+#define BQ25628E_INT_MASK_SAFETY_TMR (1UL << 1) /*!< Safety timer interrupt */
+#define BQ25628E_INT_MASK_VINDPM (1UL << 2) /*!< VINDPM regulation interrupt \
+                                             */
+#define BQ25628E_INT_MASK_IINDPM \
+  (1UL << 3) /*!< IINDPM/ILIM regulation interrupt */
+#define BQ25628E_INT_MASK_VSYS (1UL << 4) /*!< VSYSMIN regulation interrupt */
+#define BQ25628E_INT_MASK_TREG (1UL << 5) /*!< Thermal regulation interrupt */
+#define BQ25628E_INT_MASK_ADC_DONE (1UL << 6) /*!< ADC conversion interrupt */
+#define BQ25628E_INT_MASK_VBUS (1UL << 8) /*!< VBUS status change interrupt */
+#define BQ25628E_INT_MASK_CHG (1UL << 11) /*!< Charge status change interrupt \
+                                           */
+#define BQ25628E_INT_MASK_TS (1UL << 16)  /*!< TS status change interrupt */
+#define BQ25628E_INT_MASK_TSHUT (1UL << 19) /*!< Thermal shutdown interrupt */
+#define BQ25628E_INT_MASK_SYS_FAULT (1UL << 21)  /*!< System fault interrupt */
+#define BQ25628E_INT_MASK_BAT_FAULT (1UL << 22)  /*!< Battery fault interrupt \
+                                                  */
+#define BQ25628E_INT_MASK_VBUS_FAULT (1UL << 23) /*!< VBUS fault interrupt */
 
-/*! Default interrupt mask: Enable only CHG and VBUS interrupts, disable all others */
-#define BQ25628E_INT_MASK_DEFAULT        (~(BQ25628E_INT_MASK_CHG | BQ25628E_INT_MASK_VBUS))
+/*! Default interrupt mask: Enable only CHG and VBUS interrupts, disable all
+ * others */
+#define BQ25628E_INT_MASK_DEFAULT \
+  (~(BQ25628E_INT_MASK_CHG | BQ25628E_INT_MASK_VBUS))
 
 /*!
  * @brief ADC sample rate settings
@@ -189,14 +209,14 @@ typedef enum {
 } bq25628e_adc_sample_t;
 
 /*! ADC function disable flags for REG0x27_ADC_Function_Disable_0 */
-#define BQ25628E_ADC_DIS_IBUS        (1 << 7)  /*!< Disable IBUS ADC */
-#define BQ25628E_ADC_DIS_IBAT        (1 << 6)  /*!< Disable IBAT ADC */
-#define BQ25628E_ADC_DIS_VBUS        (1 << 5)  /*!< Disable VBUS ADC */
-#define BQ25628E_ADC_DIS_VBAT        (1 << 4)  /*!< Disable VBAT ADC */
-#define BQ25628E_ADC_DIS_VSYS        (1 << 3)  /*!< Disable VSYS ADC */
-#define BQ25628E_ADC_DIS_TS          (1 << 2)  /*!< Disable TS ADC */
-#define BQ25628E_ADC_DIS_TDIE        (1 << 1)  /*!< Disable TDIE ADC */
-#define BQ25628E_ADC_DIS_VPMID       (1 << 0)  /*!< Disable VPMID ADC */
+#define BQ25628E_ADC_DIS_IBUS (1 << 7)  /*!< Disable IBUS ADC */
+#define BQ25628E_ADC_DIS_IBAT (1 << 6)  /*!< Disable IBAT ADC */
+#define BQ25628E_ADC_DIS_VBUS (1 << 5)  /*!< Disable VBUS ADC */
+#define BQ25628E_ADC_DIS_VBAT (1 << 4)  /*!< Disable VBAT ADC */
+#define BQ25628E_ADC_DIS_VSYS (1 << 3)  /*!< Disable VSYS ADC */
+#define BQ25628E_ADC_DIS_TS (1 << 2)    /*!< Disable TS ADC */
+#define BQ25628E_ADC_DIS_TDIE (1 << 1)  /*!< Disable TDIE ADC */
+#define BQ25628E_ADC_DIS_VPMID (1 << 0) /*!< Disable VPMID ADC */
 
 /*! Register addresses for the BQ25628E */
 #define BQ25628E_REG_CHARGE_CURRENT_LIMIT 0x02
@@ -241,10 +261,10 @@ typedef enum {
  *        the BQ25628E I2C Battery Charger
  */
 class Adafruit_BQ25628E {
-public:
+ public:
   Adafruit_BQ25628E();
   ~Adafruit_BQ25628E();
-  bool begin(uint8_t i2c_addr = BQ25628E_DEFAULT_ADDR, TwoWire *wire = &Wire);
+  bool begin(uint8_t i2c_addr = BQ25628E_DEFAULT_ADDR, TwoWire* wire = &Wire);
 
   bool setChargeCurrentLimitA(float current_a);
   float getChargeCurrentLimitA();
@@ -366,8 +386,8 @@ public:
   float getThermistorPercent();
   float getDieTempC();
 
-private:
-  Adafruit_I2CDevice *i2c_dev; /*!< Pointer to I2C bus interface */
+ private:
+  Adafruit_I2CDevice* i2c_dev; /*!< Pointer to I2C bus interface */
 };
 
 #endif
