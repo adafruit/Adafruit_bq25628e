@@ -15,7 +15,7 @@
  *  from Adafruit!
  *
  *  @author   Limor 'ladyada' Fried with assistance from Claude Code
- *  
+ *
  *  MIT License (see license.txt)
  */
 
@@ -230,41 +230,49 @@ typedef enum {
 #define BQ25628E_ADC_DIS_VPMID (1 << 0) /*!< Disable VPMID ADC */
 
 /*! Register addresses for the BQ25628E */
-#define BQ25628E_REG_CHARGE_CURRENT_LIMIT 0x02 /*!< Charge current limit register */
-#define BQ25628E_REG_CHARGE_VOLTAGE_LIMIT 0x04 /*!< Charge voltage limit register */
-#define BQ25628E_REG_INPUT_CURRENT_LIMIT 0x06 /*!< Input current limit register */
-#define BQ25628E_REG_INPUT_VOLTAGE_LIMIT 0x08 /*!< Input voltage limit register */
-#define BQ25628E_REG_MINIMAL_SYSTEM_VOLTAGE 0x0E /*!< Minimal system voltage register */
+#define BQ25628E_REG_CHARGE_CURRENT_LIMIT \
+  0x02 /*!< Charge current limit register */
+#define BQ25628E_REG_CHARGE_VOLTAGE_LIMIT \
+  0x04 /*!< Charge voltage limit register */
+#define BQ25628E_REG_INPUT_CURRENT_LIMIT \
+  0x06 /*!< Input current limit register */
+#define BQ25628E_REG_INPUT_VOLTAGE_LIMIT \
+  0x08 /*!< Input voltage limit register */
+#define BQ25628E_REG_MINIMAL_SYSTEM_VOLTAGE \
+  0x0E /*!< Minimal system voltage register */
 #define BQ25628E_REG_PRECHARGE_CONTROL 0x10 /*!< Precharge control register */
-#define BQ25628E_REG_TERMINATION_CONTROL 0x12 /*!< Termination control register */
+#define BQ25628E_REG_TERMINATION_CONTROL \
+  0x12                                   /*!< Termination control register */
 #define BQ25628E_REG_CHARGE_CONTROL 0x14 /*!< Charge control register */
-#define BQ25628E_REG_CHARGE_TIMER_CONTROL 0x15 /*!< Charge timer control register */
+#define BQ25628E_REG_CHARGE_TIMER_CONTROL \
+  0x15 /*!< Charge timer control register */
 #define BQ25628E_REG_CHARGER_CONTROL_0 0x16 /*!< Charger control register 0 */
 #define BQ25628E_REG_CHARGER_CONTROL_1 0x17 /*!< Charger control register 1 */
 #define BQ25628E_REG_CHARGER_CONTROL_2 0x18 /*!< Charger control register 2 */
 #define BQ25628E_REG_CHARGER_CONTROL_3 0x19 /*!< Charger control register 3 */
-#define BQ25628E_REG_NTC_CONTROL_0 0x1A /*!< NTC control register 0 */
-#define BQ25628E_REG_NTC_CONTROL_1 0x1B /*!< NTC control register 1 */
-#define BQ25628E_REG_NTC_CONTROL_2 0x1C /*!< NTC control register 2 */
-#define BQ25628E_REG_CHARGER_STATUS_0 0x1D /*!< Charger status register 0 */
-#define BQ25628E_REG_CHARGER_STATUS_1 0x1E /*!< Charger status register 1 */
-#define BQ25628E_REG_FAULT_STATUS_0 0x1F /*!< Fault status register 0 */
-#define BQ25628E_REG_CHARGER_FLAG_0 0x20 /*!< Charger flag register 0 */
-#define BQ25628E_REG_CHARGER_FLAG_1 0x21 /*!< Charger flag register 1 */
-#define BQ25628E_REG_FAULT_FLAG_0 0x22 /*!< Fault flag register 0 */
-#define BQ25628E_REG_CHARGER_MASK_0 0x23 /*!< Charger mask register 0 */
-#define BQ25628E_REG_CHARGER_MASK_1 0x24 /*!< Charger mask register 1 */
-#define BQ25628E_REG_FAULT_MASK_0 0x25 /*!< Fault mask register 0 */
-#define BQ25628E_REG_ADC_CONTROL 0x26 /*!< ADC control register */
-#define BQ25628E_REG_ADC_FUNCTION_DISABLE_0 0x27 /*!< ADC function disable register 0 */
-#define BQ25628E_REG_IBUS_ADC 0x28 /*!< Input bus current ADC register */
-#define BQ25628E_REG_IBAT_ADC 0x2A /*!< Battery current ADC register */
-#define BQ25628E_REG_VBUS_ADC 0x2C /*!< Input bus voltage ADC register */
+#define BQ25628E_REG_NTC_CONTROL_0 0x1A     /*!< NTC control register 0 */
+#define BQ25628E_REG_NTC_CONTROL_1 0x1B     /*!< NTC control register 1 */
+#define BQ25628E_REG_NTC_CONTROL_2 0x1C     /*!< NTC control register 2 */
+#define BQ25628E_REG_CHARGER_STATUS_0 0x1D  /*!< Charger status register 0 */
+#define BQ25628E_REG_CHARGER_STATUS_1 0x1E  /*!< Charger status register 1 */
+#define BQ25628E_REG_FAULT_STATUS_0 0x1F    /*!< Fault status register 0 */
+#define BQ25628E_REG_CHARGER_FLAG_0 0x20    /*!< Charger flag register 0 */
+#define BQ25628E_REG_CHARGER_FLAG_1 0x21    /*!< Charger flag register 1 */
+#define BQ25628E_REG_FAULT_FLAG_0 0x22      /*!< Fault flag register 0 */
+#define BQ25628E_REG_CHARGER_MASK_0 0x23    /*!< Charger mask register 0 */
+#define BQ25628E_REG_CHARGER_MASK_1 0x24    /*!< Charger mask register 1 */
+#define BQ25628E_REG_FAULT_MASK_0 0x25      /*!< Fault mask register 0 */
+#define BQ25628E_REG_ADC_CONTROL 0x26       /*!< ADC control register */
+#define BQ25628E_REG_ADC_FUNCTION_DISABLE_0 \
+  0x27                              /*!< ADC function disable register 0 */
+#define BQ25628E_REG_IBUS_ADC 0x28  /*!< Input bus current ADC register */
+#define BQ25628E_REG_IBAT_ADC 0x2A  /*!< Battery current ADC register */
+#define BQ25628E_REG_VBUS_ADC 0x2C  /*!< Input bus voltage ADC register */
 #define BQ25628E_REG_VPMID_ADC 0x2E /*!< PMID voltage ADC register */
-#define BQ25628E_REG_VBAT_ADC 0x30 /*!< Battery voltage ADC register */
-#define BQ25628E_REG_VSYS_ADC 0x32 /*!< System voltage ADC register */
-#define BQ25628E_REG_TS_ADC 0x34 /*!< Temperature sensor ADC register */
-#define BQ25628E_REG_TDIE_ADC 0x36 /*!< Die temperature ADC register */
+#define BQ25628E_REG_VBAT_ADC 0x30  /*!< Battery voltage ADC register */
+#define BQ25628E_REG_VSYS_ADC 0x32  /*!< System voltage ADC register */
+#define BQ25628E_REG_TS_ADC 0x34    /*!< Temperature sensor ADC register */
+#define BQ25628E_REG_TDIE_ADC 0x36  /*!< Die temperature ADC register */
 #define BQ25628E_REG_PART_INFORMATION 0x38 /*!< Part information register */
 
 /*!
