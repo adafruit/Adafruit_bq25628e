@@ -298,3 +298,392 @@ float Adafruit_BQ25628E::getMinimalSystemVoltageV() {
   // Convert register value to voltage: voltage_v = vsysmin_value * 0.08
   return vsysmin_value * 0.08f;
 }
+
+/*!
+ *    @brief  Sets the precharge current limit
+ *    @param  current_a
+ *            Current in Amps (0.01A to 0.31A in 0.01A steps)
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setPrechargeCurrentLimitA(float current_a) {
+  // Convert current to mA and then to register value
+  uint16_t current_ma = (uint16_t)(current_a * 1000);
+  uint8_t iprechg_value = current_ma / 10;
+  
+  // Clamp to valid range (1-31 for 0.01A-0.31A)
+  if (iprechg_value < 1) {
+    iprechg_value = 1;
+  }
+  if (iprechg_value > 31) {
+    iprechg_value = 31;
+  }
+  
+  // Create register object (16-bit register, little endian)
+  Adafruit_BusIO_Register precharge_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_PRECHARGE_CONTROL, 2, LSBFIRST);
+  
+  // Create register bits object for IPRECHG field (5 bits, shift by 3)
+  Adafruit_BusIO_RegisterBits iprechg_bits = Adafruit_BusIO_RegisterBits(&precharge_reg, 5, 3);
+  
+  return iprechg_bits.write(iprechg_value);
+}
+
+/*!
+ *    @brief  Gets the precharge current limit
+ *    @return Current limit in Amps
+ */
+float Adafruit_BQ25628E::getPrechargeCurrentLimitA() {
+  // Create register object (16-bit register, little endian)
+  Adafruit_BusIO_Register precharge_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_PRECHARGE_CONTROL, 2, LSBFIRST);
+  
+  // Create register bits object for IPRECHG field (5 bits, shift by 3)
+  Adafruit_BusIO_RegisterBits iprechg_bits = Adafruit_BusIO_RegisterBits(&precharge_reg, 5, 3);
+  
+  uint8_t iprechg_value = iprechg_bits.read();
+  
+  // Convert register value to current: current_a = iprechg_value * 0.01
+  return iprechg_value * 0.01f;
+}
+
+/*!
+ *    @brief  Sets the termination current threshold
+ *    @param  current_a
+ *            Current in Amps (0.005A to 0.31A in 0.005A steps)
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setTerminationCurrentThresholdA(float current_a) {
+  // Convert current to mA and then to register value
+  uint16_t current_ma = (uint16_t)(current_a * 1000);
+  uint8_t iterm_value = current_ma / 5;
+  
+  // Clamp to valid range (1-62 for 0.005A-0.31A)
+  if (iterm_value < 1) {
+    iterm_value = 1;
+  }
+  if (iterm_value > 62) {
+    iterm_value = 62;
+  }
+  
+  // Create register object (16-bit register, little endian)
+  Adafruit_BusIO_Register termination_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_TERMINATION_CONTROL, 2, LSBFIRST);
+  
+  // Create register bits object for ITERM field (6 bits, shift by 2)
+  Adafruit_BusIO_RegisterBits iterm_bits = Adafruit_BusIO_RegisterBits(&termination_reg, 6, 2);
+  
+  return iterm_bits.write(iterm_value);
+}
+
+/*!
+ *    @brief  Gets the termination current threshold
+ *    @return Current threshold in Amps
+ */
+float Adafruit_BQ25628E::getTerminationCurrentThresholdA() {
+  // Create register object (16-bit register, little endian)
+  Adafruit_BusIO_Register termination_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_TERMINATION_CONTROL, 2, LSBFIRST);
+  
+  // Create register bits object for ITERM field (6 bits, shift by 2)
+  Adafruit_BusIO_RegisterBits iterm_bits = Adafruit_BusIO_RegisterBits(&termination_reg, 6, 2);
+  
+  uint8_t iterm_value = iterm_bits.read();
+  
+  // Convert register value to current: current_a = iterm_value * 0.005
+  return iterm_value * 0.005f;
+}
+
+/*!
+ *    @brief  Sets the trickle charging current
+ *    @param  use_40ma
+ *            True for 40mA trickle current, false for 10mA trickle current
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setTrickleCurrent(bool use_40ma) {
+  Adafruit_BusIO_Register charge_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits itrickle_bit = Adafruit_BusIO_RegisterBits(&charge_control_reg, 1, 5);
+  
+  return itrickle_bit.write(use_40ma ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets the trickle charging current setting
+ *    @return True if 40mA trickle current, false if 10mA trickle current
+ */
+bool Adafruit_BQ25628E::getTrickleCurrent() {
+  Adafruit_BusIO_Register charge_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits itrickle_bit = Adafruit_BusIO_RegisterBits(&charge_control_reg, 1, 5);
+  
+  return itrickle_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets charge termination enable/disable
+ *    @param  enable
+ *            True to enable termination, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setEnableTermination(bool enable) {
+  Adafruit_BusIO_Register charge_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits en_term_bit = Adafruit_BusIO_RegisterBits(&charge_control_reg, 1, 2);
+  
+  return en_term_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets charge termination enable/disable status
+ *    @return True if termination enabled, false if disabled
+ */
+bool Adafruit_BQ25628E::getEnableTermination() {
+  Adafruit_BusIO_Register charge_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits en_term_bit = Adafruit_BusIO_RegisterBits(&charge_control_reg, 1, 2);
+  
+  return en_term_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets VINDPM battery voltage tracking
+ *    @param  enable
+ *            True for VBAT + 400mV tracking, false for register-only VINDPM
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setVINDPMbatTrack(bool enable) {
+  Adafruit_BusIO_Register charge_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits vindpm_bat_track_bit = Adafruit_BusIO_RegisterBits(&charge_control_reg, 1, 1);
+  
+  return vindpm_bat_track_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets VINDPM battery voltage tracking status
+ *    @return True if VBAT + 400mV tracking enabled, false if register-only VINDPM
+ */
+bool Adafruit_BQ25628E::getVINDPMbatTrack() {
+  Adafruit_BusIO_Register charge_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits vindpm_bat_track_bit = Adafruit_BusIO_RegisterBits(&charge_control_reg, 1, 1);
+  
+  return vindpm_bat_track_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets charge timer enable/disable
+ *    @param  enable
+ *            True to enable safety timers, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setEnableSafetyTimers(bool enable) {
+  Adafruit_BusIO_Register timer_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_TIMER_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits en_safety_tmrs_bit = Adafruit_BusIO_RegisterBits(&timer_control_reg, 1, 2);
+  
+  return en_safety_tmrs_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets charge timer enable/disable status
+ *    @return True if safety timers enabled, false if disabled
+ */
+bool Adafruit_BQ25628E::getEnableSafetyTimers() {
+  Adafruit_BusIO_Register timer_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_TIMER_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits en_safety_tmrs_bit = Adafruit_BusIO_RegisterBits(&timer_control_reg, 1, 2);
+  
+  return en_safety_tmrs_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets precharge timer setting
+ *    @param  short_timer
+ *            True for 0.62 hours, false for 2.5 hours (default)
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setPrechargeTimer(bool short_timer) {
+  Adafruit_BusIO_Register timer_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_TIMER_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits prechg_tmr_bit = Adafruit_BusIO_RegisterBits(&timer_control_reg, 1, 1);
+  
+  return prechg_tmr_bit.write(short_timer ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets precharge timer setting
+ *    @return True if 0.62 hours, false if 2.5 hours
+ */
+bool Adafruit_BQ25628E::getPrechargeTimer() {
+  Adafruit_BusIO_Register timer_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_TIMER_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits prechg_tmr_bit = Adafruit_BusIO_RegisterBits(&timer_control_reg, 1, 1);
+  
+  return prechg_tmr_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets fast charge timer setting
+ *    @param  long_timer
+ *            True for 28 hours, false for 14.5 hours (default)
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setFastchargeTimer(bool long_timer) {
+  Adafruit_BusIO_Register timer_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_TIMER_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits chg_tmr_bit = Adafruit_BusIO_RegisterBits(&timer_control_reg, 1, 0);
+  
+  return chg_tmr_bit.write(long_timer ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets fast charge timer setting
+ *    @return True if 28 hours, false if 14.5 hours
+ */
+bool Adafruit_BQ25628E::getFastchargeTimer() {
+  Adafruit_BusIO_Register timer_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGE_TIMER_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits chg_tmr_bit = Adafruit_BusIO_RegisterBits(&timer_control_reg, 1, 0);
+  
+  return chg_tmr_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets auto battery discharge during battery OVP
+ *    @param  enable
+ *            True to enable auto discharge during battery OVP, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setAutoBatteryDischarge(bool enable) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits en_auto_ibatdis_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 7);
+  
+  return en_auto_ibatdis_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets auto battery discharge setting
+ *    @return True if auto discharge enabled, false if disabled
+ */
+bool Adafruit_BQ25628E::getAutoBatteryDischarge() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits en_auto_ibatdis_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 7);
+  
+  return en_auto_ibatdis_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Forces battery discharge current (~30mA)
+ *    @param  enable
+ *            True to force discharge current, false for idle
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setForceBatteryDischarge(bool enable) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits force_ibatdis_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 6);
+  
+  return force_ibatdis_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets forced battery discharge status
+ *    @return True if discharge current forced, false if idle
+ */
+bool Adafruit_BQ25628E::getForceBatteryDischarge() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits force_ibatdis_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 6);
+  
+  return force_ibatdis_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets charger enable/disable
+ *    @param  enable
+ *            True to enable charging, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setEnableCharging(bool enable) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits en_chg_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 5);
+  
+  return en_chg_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets charger enable status
+ *    @return True if charging enabled, false if disabled
+ */
+bool Adafruit_BQ25628E::getEnableCharging() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits en_chg_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 5);
+  
+  return en_chg_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Sets HIZ mode enable/disable
+ *    @param  enable
+ *            True to enable HIZ mode, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setHighZ(bool enable) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits en_hiz_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 4);
+  
+  return en_hiz_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets HIZ mode status
+ *    @return True if HIZ mode enabled, false if disabled
+ */
+bool Adafruit_BQ25628E::getHighZ() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits en_hiz_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 4);
+  
+  return en_hiz_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Forces PMID discharge current (~30mA)
+ *    @param  enable
+ *            True to force PMID discharge, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setForcePMIDDischarge(bool enable) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits force_pmid_dis_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 3);
+  
+  return force_pmid_dis_bit.write(enable ? 1 : 0);
+}
+
+/*!
+ *    @brief  Gets forced PMID discharge status
+ *    @return True if PMID discharge forced, false if disabled
+ */
+bool Adafruit_BQ25628E::getForcePMIDDischarge() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits force_pmid_dis_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 3);
+  
+  return force_pmid_dis_bit.read() == 1;
+}
+
+/*!
+ *    @brief  Resets the I2C watchdog timer
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::resetWatchdog() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits wd_rst_bit = Adafruit_BusIO_RegisterBits(&charger_control_reg, 1, 2);
+  
+  return wd_rst_bit.write(1);
+}
+
+/*!
+ *    @brief  Sets watchdog timer setting
+ *    @param  setting
+ *            Watchdog timer setting from bq25628e_watchdog_t enum
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setWatchdog(bq25628e_watchdog_t setting) {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits watchdog_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 0);
+  
+  return watchdog_bits.write((uint8_t)setting);
+}
+
+/*!
+ *    @brief  Gets watchdog timer setting
+ *    @return Current watchdog timer setting
+ */
+bq25628e_watchdog_t Adafruit_BQ25628E::getWatchdog() {
+  Adafruit_BusIO_Register charger_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_CONTROL_0, 1);
+  Adafruit_BusIO_RegisterBits watchdog_bits = Adafruit_BusIO_RegisterBits(&charger_control_reg, 2, 0);
+  
+  return (bq25628e_watchdog_t)watchdog_bits.read();
+}

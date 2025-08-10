@@ -28,6 +28,16 @@
 /*! Default I2C address for the BQ25628E */
 #define BQ25628E_DEFAULT_ADDR 0x6A
 
+/*!
+ * @brief Watchdog timer settings
+ */
+typedef enum {
+  BQ25628E_WATCHDOG_DISABLED = 0b00, /*!< Watchdog disabled */
+  BQ25628E_WATCHDOG_50S = 0b01,      /*!< 50 second watchdog */
+  BQ25628E_WATCHDOG_100S = 0b10,     /*!< 100 second watchdog */
+  BQ25628E_WATCHDOG_200S = 0b11      /*!< 200 second watchdog */
+} bq25628e_watchdog_t;
+
 /*! Register addresses for the BQ25628E */
 #define BQ25628E_REG_CHARGE_CURRENT_LIMIT 0x02
 #define BQ25628E_REG_CHARGE_VOLTAGE_LIMIT 0x04
@@ -90,6 +100,50 @@ public:
 
   bool setMinimalSystemVoltageV(float voltage_v);
   float getMinimalSystemVoltageV();
+
+  bool setPrechargeCurrentLimitA(float current_a);
+  float getPrechargeCurrentLimitA();
+
+  bool setTerminationCurrentThresholdA(float current_a);
+  float getTerminationCurrentThresholdA();
+
+  bool setTrickleCurrent(bool use_40ma);
+  bool getTrickleCurrent();
+
+  bool setEnableTermination(bool enable);
+  bool getEnableTermination();
+
+  bool setVINDPMbatTrack(bool enable);
+  bool getVINDPMbatTrack();
+
+  bool setEnableSafetyTimers(bool enable);
+  bool getEnableSafetyTimers();
+
+  bool setPrechargeTimer(bool short_timer);
+  bool getPrechargeTimer();
+
+  bool setFastchargeTimer(bool long_timer);
+  bool getFastchargeTimer();
+
+  bool setAutoBatteryDischarge(bool enable);
+  bool getAutoBatteryDischarge();
+
+  bool setForceBatteryDischarge(bool enable);
+  bool getForceBatteryDischarge();
+
+  bool setEnableCharging(bool enable);
+  bool getEnableCharging();
+
+  bool setHighZ(bool enable);
+  bool getHighZ();
+
+  bool setForcePMIDDischarge(bool enable);
+  bool getForcePMIDDischarge();
+
+  bool resetWatchdog();
+
+  bool setWatchdog(bq25628e_watchdog_t setting);
+  bq25628e_watchdog_t getWatchdog();
 
 private:
   Adafruit_I2CDevice *i2c_dev; /*!< Pointer to I2C bus interface */
