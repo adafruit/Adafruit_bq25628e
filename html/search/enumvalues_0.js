@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['bq25628e_5fadc_5fsample_5f10bit',['BQ25628E_ADC_SAMPLE_10BIT',['../_adafruit___b_q25628_e_8h.html#a5f0bbba0d355f5f6a900b77d058feed2a10b537d35ff7ac6a6b2a8570c99656e2',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fadc_5fsample_5f11bit',['BQ25628E_ADC_SAMPLE_11BIT',['../_adafruit___b_q25628_e_8h.html#a5f0bbba0d355f5f6a900b77d058feed2af095ce4e097921beccd9938e703430b7',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fadc_5fsample_5f12bit',['BQ25628E_ADC_SAMPLE_12BIT',['../_adafruit___b_q25628_e_8h.html#a5f0bbba0d355f5f6a900b77d058feed2aaa9cac72bf4897d8af755df3547d81cf',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fadc_5fsample_5f9bit',['BQ25628E_ADC_SAMPLE_9BIT',['../_adafruit___b_q25628_e_8h.html#a5f0bbba0d355f5f6a900b77d058feed2a6f9990bc0d5857c5b68deecc9681befc',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fbatfet_5fnormal',['BQ25628E_BATFET_NORMAL',['../_adafruit___b_q25628_e_8h.html#adecdc3092c3b683a70e888e36fd3831da815ed57a0061d0489f6030395495d7e3',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fbatfet_5freset',['BQ25628E_BATFET_RESET',['../_adafruit___b_q25628_e_8h.html#adecdc3092c3b683a70e888e36fd3831da974dc284e42f21f9772bcca96730ccde',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fbatfet_5fship',['BQ25628E_BATFET_SHIP',['../_adafruit___b_q25628_e_8h.html#adecdc3092c3b683a70e888e36fd3831da3d7d83898be7e68689d98fc6092ec83f',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fbatfet_5fshutdown',['BQ25628E_BATFET_SHUTDOWN',['../_adafruit___b_q25628_e_8h.html#adecdc3092c3b683a70e888e36fd3831da308b84053dd1922e6a075dd7ac338ff8',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fcharge_5frate_5f1c',['BQ25628E_CHARGE_RATE_1C',['../_adafruit___b_q25628_e_8h.html#adb462d03a409dec3ef9a951d87b6ff95a35d37a23f05241ab33946e16d1b2731a',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fcharge_5frate_5f2c',['BQ25628E_CHARGE_RATE_2C',['../_adafruit___b_q25628_e_8h.html#adb462d03a409dec3ef9a951d87b6ff95a8361fe7d306d09ba881a95a30a9d0995',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fcharge_5frate_5f4c',['BQ25628E_CHARGE_RATE_4C',['../_adafruit___b_q25628_e_8h.html#adb462d03a409dec3ef9a951d87b6ff95a5441f7772773a9eac3a3b5bbd080ccc0',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fcharge_5frate_5f6c',['BQ25628E_CHARGE_RATE_6C',['../_adafruit___b_q25628_e_8h.html#adb462d03a409dec3ef9a951d87b6ff95acb8c0a93be418a70a8b561f3fe406d7f',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fconv_5ffreq_5f1350khz',['BQ25628E_CONV_FREQ_1350KHZ',['../_adafruit___b_q25628_e_8h.html#ab7497e43c3a24b25e33754691de0b01ba942fdbe27f75bb740c1301eb721ca935',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fconv_5ffreq_5f1500khz',['BQ25628E_CONV_FREQ_1500KHZ',['../_adafruit___b_q25628_e_8h.html#ab7497e43c3a24b25e33754691de0b01baba6b0e23b5e073c4704c16751afb5116',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fconv_5ffreq_5f1650khz',['BQ25628E_CONV_FREQ_1650KHZ',['../_adafruit___b_q25628_e_8h.html#ab7497e43c3a24b25e33754691de0b01ba0d7ce9e9f032927f970abfb8959c691f',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fconv_5ffreq_5freserved',['BQ25628E_CONV_FREQ_RESERVED',['../_adafruit___b_q25628_e_8h.html#ab7497e43c3a24b25e33754691de0b01ba6eb025e747212be745baac2f1020f5ca',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5ftherm_5fcurr_5f20pct',['BQ25628E_THERM_CURR_20PCT',['../_adafruit___b_q25628_e_8h.html#a435d7784519e7fcb3355d8d03f68f42faa668e7999adb4cae3d031beaf7d0a5bf',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5ftherm_5fcurr_5f40pct',['BQ25628E_THERM_CURR_40PCT',['../_adafruit___b_q25628_e_8h.html#a435d7784519e7fcb3355d8d03f68f42fa729ab9656175e423d8f866c029306726',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5ftherm_5fcurr_5fsuspend',['BQ25628E_THERM_CURR_SUSPEND',['../_adafruit___b_q25628_e_8h.html#a435d7784519e7fcb3355d8d03f68f42fa20a5020479182152bc6fa3a241d9ce95',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5ftherm_5fcurr_5funchanged',['BQ25628E_THERM_CURR_UNCHANGED',['../_adafruit___b_q25628_e_8h.html#a435d7784519e7fcb3355d8d03f68f42fa85ae4ff3b724e181271fd3e47496b0b7',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fwatchdog_5f100s',['BQ25628E_WATCHDOG_100S',['../_adafruit___b_q25628_e_8h.html#a61b46e54de4a43b0d15162325d5d1108a0e68334058fe415c88f659a85b79d433',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fwatchdog_5f200s',['BQ25628E_WATCHDOG_200S',['../_adafruit___b_q25628_e_8h.html#a61b46e54de4a43b0d15162325d5d1108adebe58fdbe558142273b9a3588f5d19e',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fwatchdog_5f50s',['BQ25628E_WATCHDOG_50S',['../_adafruit___b_q25628_e_8h.html#a61b46e54de4a43b0d15162325d5d1108aa220c91db426a22fd2614636ce65097b',1,'Adafruit_BQ25628E.h']]],
+  ['bq25628e_5fwatchdog_5fdisabled',['BQ25628E_WATCHDOG_DISABLED',['../_adafruit___b_q25628_e_8h.html#a61b46e54de4a43b0d15162325d5d1108ac130b9ed7f1ae2a0091e4f4201a5123b',1,'Adafruit_BQ25628E.h']]]
+];
