@@ -352,9 +352,358 @@ void setup() {
       break;
   }
   
+  // Enable ADC and set to 12-bit mode by default
+  Serial.println(F("Enabling ADC with 12-bit resolution..."));
+  if (bq.setADCEnable(true) && bq.setADCSampleRate(BQ25628E_ADC_SAMPLE_12BIT)) {
+    Serial.println(F("ADC configured successfully"));
+  } else {
+    Serial.println(F("Failed to configure ADC"));
+  }
+  
+  // Test ADC configuration functions
+  bool adc_enabled = bq.getADCEnable();
+  Serial.print(F("ADC enabled: "));
+  Serial.println(adc_enabled ? F("true") : F("false"));
+  
+  bool adc_oneshot = bq.getADCOneShot();
+  Serial.print(F("ADC one-shot mode: "));
+  Serial.println(adc_oneshot ? F("true") : F("false"));
+  
+  bq25628e_adc_sample_t sample_rate = bq.getADCSampleRate();
+  Serial.print(F("ADC sample rate: "));
+  switch (sample_rate) {
+    case BQ25628E_ADC_SAMPLE_12BIT:
+      Serial.println(F("12-bit"));
+      break;
+    case BQ25628E_ADC_SAMPLE_11BIT:
+      Serial.println(F("11-bit"));
+      break;
+    case BQ25628E_ADC_SAMPLE_10BIT:
+      Serial.println(F("10-bit"));
+      break;
+    case BQ25628E_ADC_SAMPLE_9BIT:
+      Serial.println(F("9-bit"));
+      break;
+  }
+  
+  // Ensure all ADC functions are enabled (disable_flags = 0x00)
+  Serial.println(F("Ensuring all ADC functions are enabled..."));
+  if (bq.setDisableADC(0x00)) {
+    Serial.println(F("ADC functions configured successfully"));
+  } else {
+    Serial.println(F("Failed to configure ADC functions"));
+  }
+  
+  // Display ADC function enable status
+  uint8_t adc_disable_flags = bq.getDisableADC();
+  Serial.print(F("ADC Function Status (0x"));
+  Serial.print(adc_disable_flags, HEX);
+  Serial.println(F("):"));
+  
+  Serial.print(F("  IBUS ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_IBUS) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  IBAT ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_IBAT) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  VBUS ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_VBUS) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  VBAT ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_VBAT) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  VSYS ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_VSYS) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  TS ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_TS) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  TDIE ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_TDIE) ? F("Disabled") : F("Enabled"));
+  
+  Serial.print(F("  VPMID ADC: "));
+  Serial.println((adc_disable_flags & BQ25628E_ADC_DIS_VPMID) ? F("Disabled") : F("Enabled"));
+  
   Serial.println(F("All tests completed!"));
+  
+  // Set interrupt mask to enable only CHG and VBUS interrupts, disable all others
+  Serial.println(F("Setting interrupt mask (CHG + VBUS enabled, others disabled)..."));
+  uint32_t intMask = BQ25628E_INT_MASK_WD | BQ25628E_INT_MASK_SAFETY_TMR | 
+                     BQ25628E_INT_MASK_VINDPM | BQ25628E_INT_MASK_IINDPM |
+                     BQ25628E_INT_MASK_VSYS | BQ25628E_INT_MASK_TREG |
+                     BQ25628E_INT_MASK_ADC_DONE | BQ25628E_INT_MASK_TS |
+                     BQ25628E_INT_MASK_TSHUT | BQ25628E_INT_MASK_SYS_FAULT |
+                     BQ25628E_INT_MASK_BAT_FAULT | BQ25628E_INT_MASK_VBUS_FAULT;
+  // CHG and VBUS interrupts NOT included in mask = they remain enabled
+  
+  if (bq.setInterruptMask(intMask)) {
+    Serial.println(F("Interrupt mask set successfully"));
+  } else {
+    Serial.println(F("Failed to set interrupt mask"));
+  }
+  
+  // Read back and display interrupt mask
+  uint32_t readMask = bq.getInterruptMask();
+  Serial.print(F("Current interrupt mask: 0x"));
+  Serial.println(readMask, HEX);
+}
+
+void printChargerStatus() {
+  uint16_t statusFlags = bq.getChargerStatusFlags();
+  uint8_t faultFlags = bq.getFaultStatusFlags();
+  uint16_t chargerFlags = bq.getChargerFlags();
+  uint8_t faultFlagsCleared = bq.getFaultFlags();
+  uint8_t status0 = statusFlags & 0xFF;
+  uint8_t status1 = (statusFlags >> 8) & 0xFF;
+  uint8_t flag0 = chargerFlags & 0xFF;
+  uint8_t flag1 = (chargerFlags >> 8) & 0xFF;
+  
+  Serial.println(F("=== Charger Status ==="));
+  Serial.print(F("Status: 0x"));
+  Serial.print(statusFlags, HEX);
+  Serial.print(F(", Fault: 0x"));
+  Serial.print(faultFlags, HEX);
+  Serial.print(F(", Flags: 0x"));
+  Serial.print(chargerFlags, HEX);
+  Serial.print(F(", FaultFlags: 0x"));
+  Serial.println(faultFlagsCleared, HEX);
+  
+  // REG0x1D Status 0 flags
+  Serial.print(F("Status 0 (0x"));
+  Serial.print(status0, HEX);
+  Serial.println(F("):"));
+  
+  if (status0 & BQ25628E_STATUS0_WD_STAT) {
+    Serial.println(F("  ⚠️  WD Timer Expired"));
+  }
+  if (status0 & BQ25628E_STATUS0_SAFETY_TMR_STAT) {
+    Serial.println(F("  ⚠️  Safety Timer Expired"));
+  }
+  if (status0 & BQ25628E_STATUS0_VINDPM_STAT) {
+    Serial.println(F("  📉 VINDPM Regulation Active"));
+  }
+  if (status0 & BQ25628E_STATUS0_IINDPM_STAT) {
+    Serial.println(F("  📉 IINDPM/ILIM Regulation Active"));
+  }
+  if (status0 & BQ25628E_STATUS0_VSYS_STAT) {
+    Serial.println(F("  📉 VSYSMIN Regulation Active"));
+  }
+  if (status0 & BQ25628E_STATUS0_TREG_STAT) {
+    Serial.println(F("  🌡️  Thermal Regulation Active"));
+  }
+  if (status0 & BQ25628E_STATUS0_ADC_DONE_STAT) {
+    Serial.println(F("  ✅ ADC Conversion Complete"));
+  }
+  
+  // REG0x1E Status 1 flags
+  Serial.print(F("Status 1 (0x"));
+  Serial.print(status1, HEX);
+  Serial.println(F("):"));
+  
+  // VBUS Status (bits 2:0)
+  uint8_t vbus_stat = status1 & BQ25628E_STATUS1_VBUS_STAT_MASK;
+  Serial.print(F("  🔌 VBUS: "));
+  switch (vbus_stat) {
+    case BQ25628E_VBUS_STAT_NOT_POWERED:
+      Serial.println(F("Not Powered"));
+      break;
+    case BQ25628E_VBUS_STAT_UNKNOWN_ADAPTER:
+      Serial.println(F("Unknown Adapter"));
+      break;
+    default:
+      Serial.print(F("Status Code "));
+      Serial.println(vbus_stat);
+      break;
+  }
+  
+  // Charge Status (bits 4:3)
+  uint8_t chg_stat = (status1 & BQ25628E_STATUS1_CHG_STAT_MASK) >> BQ25628E_STATUS1_CHG_STAT_SHIFT;
+  Serial.print(F("  🔋 Charge: "));
+  switch (chg_stat) {
+    case BQ25628E_CHG_STAT_NOT_CHARGING:
+      Serial.println(F("Not Charging/Terminated"));
+      break;
+    case BQ25628E_CHG_STAT_CHARGING:
+      Serial.println(F("Charging (CC mode)"));
+      break;
+    case BQ25628E_CHG_STAT_TAPER:
+      Serial.println(F("Taper Charge (CV mode)"));
+      break;
+    case BQ25628E_CHG_STAT_TOPOFF:
+      Serial.println(F("Top-off Timer Active"));
+      break;
+  }
+  
+  // REG0x1F Fault Status flags
+  Serial.print(F("Fault Status (0x"));
+  Serial.print(faultFlags, HEX);
+  Serial.println(F("):"));
+  
+  if (faultFlags & BQ25628E_FAULT_VBUS_FAULT_STAT) {
+    Serial.println(F("  🚨 VBUS Fault (OVP/Sleep)"));
+  }
+  if (faultFlags & BQ25628E_FAULT_BAT_FAULT_STAT) {
+    Serial.println(F("  🚨 Battery Fault (OCP/OVP)"));
+  }
+  if (faultFlags & BQ25628E_FAULT_SYS_FAULT_STAT) {
+    Serial.println(F("  🚨 System Fault (Short/OVP)"));
+  }
+  if (faultFlags & BQ25628E_FAULT_TSHUT_STAT) {
+    Serial.println(F("  🔥 Thermal Shutdown"));
+  }
+  
+  // TS Status (bits 2:0)
+  uint8_t ts_stat = faultFlags & BQ25628E_FAULT_TS_STAT_MASK;
+  Serial.print(F("  🌡️  TS Status: "));
+  switch (ts_stat) {
+    case BQ25628E_TS_STAT_NORMAL:
+      Serial.println(F("Normal"));
+      break;
+    case BQ25628E_TS_STAT_COLD:
+      Serial.println(F("Cold"));
+      break;
+    case BQ25628E_TS_STAT_HOT:
+      Serial.println(F("Hot"));
+      break;
+    case BQ25628E_TS_STAT_COOL:
+      Serial.println(F("Cool"));
+      break;
+    case BQ25628E_TS_STAT_WARM:
+      Serial.println(F("Warm"));
+      break;
+    case BQ25628E_TS_STAT_PRECOOL:
+      Serial.println(F("Pre-cool"));
+      break;
+    case BQ25628E_TS_STAT_PREWARM:
+      Serial.println(F("Pre-warm"));
+      break;
+    case BQ25628E_TS_STAT_BIAS_FAULT:
+      Serial.println(F("Bias Reference Fault"));
+      break;
+  }
+  
+  // REG0x20/0x21 Charger Flag status (cleared on read!)
+  if (flag0 != 0 || flag1 != 0) {
+    Serial.print(F("Charger Flags (0x"));
+    Serial.print(flag1, HEX);
+    Serial.print(F("/0x"));
+    Serial.print(flag0, HEX);
+    Serial.println(F(") - CLEARED:"));
+    
+    // Flag0 bits
+    if (flag0 & BQ25628E_FLAG0_WD_FLAG) {
+      Serial.println(F("  🚩 WD Timer Expired"));
+    }
+    if (flag0 & BQ25628E_FLAG0_SAFETY_TMR_FLAG) {
+      Serial.println(F("  🚩 Safety Timer Expired"));
+    }
+    if (flag0 & BQ25628E_FLAG0_VINDPM_FLAG) {
+      Serial.println(F("  🚩 VINDPM Regulation Event"));
+    }
+    if (flag0 & BQ25628E_FLAG0_IINDPM_FLAG) {
+      Serial.println(F("  🚩 IINDPM/ILIM Regulation Event"));
+    }
+    if (flag0 & BQ25628E_FLAG0_VSYS_FLAG) {
+      Serial.println(F("  🚩 VSYSMIN Regulation Event"));
+    }
+    if (flag0 & BQ25628E_FLAG0_TREG_FLAG) {
+      Serial.println(F("  🚩 Thermal Regulation Event"));
+    }
+    if (flag0 & BQ25628E_FLAG0_ADC_DONE_FLAG) {
+      Serial.println(F("  🚩 ADC Conversion Complete"));
+    }
+    
+    // Flag1 bits
+    if (flag1 & BQ25628E_FLAG1_VBUS_FLAG) {
+      Serial.println(F("  🚩 VBUS Status Changed"));
+    }
+    if (flag1 & BQ25628E_FLAG1_CHG_FLAG) {
+      Serial.println(F("  🚩 Charge Status Changed"));
+    }
+  } else {
+    Serial.println(F("No charger flags set"));
+  }
+  
+  // REG0x22 Fault Flag status (cleared on read!)
+  if (faultFlagsCleared != 0) {
+    Serial.print(F("Fault Flags (0x"));
+    Serial.print(faultFlagsCleared, HEX);
+    Serial.println(F(") - CLEARED:"));
+    
+    if (faultFlagsCleared & BQ25628E_FAULT_FLAG_VBUS_FAULT) {
+      Serial.println(F("  💥 VBUS Fault Event (OVP/Sleep)"));
+    }
+    if (faultFlagsCleared & BQ25628E_FAULT_FLAG_BAT_FAULT) {
+      Serial.println(F("  💥 Battery Fault Event (OCP/OVP)"));
+    }
+    if (faultFlagsCleared & BQ25628E_FAULT_FLAG_SYS_FAULT) {
+      Serial.println(F("  💥 System Fault Event (OVP/Short)"));
+    }
+    if (faultFlagsCleared & BQ25628E_FAULT_FLAG_TSHUT) {
+      Serial.println(F("  💥 Thermal Shutdown Event"));
+    }
+    if (faultFlagsCleared & BQ25628E_FAULT_FLAG_TS_CHANGED) {
+      Serial.println(F("  💥 TS Status Changed Event"));
+    }
+  } else {
+    Serial.println(F("No fault flags set"));
+  }
+  
+  // Display current interrupt mask status
+  uint32_t currentMask = bq.getInterruptMask();
+  Serial.print(F("INT Mask: CHG="));
+  Serial.print((currentMask & BQ25628E_INT_MASK_CHG) ? F("OFF") : F("ON"));
+  Serial.print(F(", VBUS="));
+  Serial.print((currentMask & BQ25628E_INT_MASK_VBUS) ? F("OFF") : F("ON"));
+  Serial.print(F(", Others="));
+  Serial.println((currentMask & ~(BQ25628E_INT_MASK_CHG | BQ25628E_INT_MASK_VBUS)) ? F("OFF") : F("ON"));
+  
+  Serial.println(F("====================="));
+  Serial.println();
 }
 
 void loop() {
-  delay(1000);
+  static unsigned long lastStatusTime = 0;
+  static unsigned long lastADCTime = 0;
+  unsigned long currentTime = millis();
+  
+  // Print all ADC values every 1 second
+  if (currentTime - lastADCTime >= 1000) {
+    float ibus_current = bq.getIBUScurrent();
+    float ibat_current = bq.getIBATcurrent();
+    float vbus_voltage = bq.getVBUSvoltage();
+    float vpmid_voltage = bq.getVPMIDvoltage();
+    float vbat_voltage = bq.getVBATvoltage();
+    float vsys_voltage = bq.getVSYSvoltage();
+    float thermistor_percent = bq.getThermistorPercent();
+    float die_temp = bq.getDieTempC();
+    
+    Serial.print(F("ADC: IBUS="));
+    Serial.print(ibus_current, 3);
+    Serial.print(F("A, IBAT="));
+    Serial.print(ibat_current, 3);
+    Serial.print(F("A, VBUS="));
+    Serial.print(vbus_voltage, 3);
+    Serial.print(F("V, VPMID="));
+    Serial.print(vpmid_voltage, 3);
+    Serial.print(F("V, VBAT="));
+    Serial.print(vbat_voltage, 3);
+    Serial.print(F("V, VSYS="));
+    Serial.print(vsys_voltage, 3);
+    Serial.print(F("V, TS="));
+    Serial.print(thermistor_percent, 1);
+    Serial.print(F("%, TDIE="));
+    Serial.print(die_temp, 1);
+    Serial.println(F("°C"));
+    
+    lastADCTime = currentTime;
+  }
+  
+  // Print status every 5 seconds
+  if (currentTime - lastStatusTime >= 5000) {
+    printChargerStatus();
+    lastStatusTime = currentTime;
+  }
+  
+  delay(100);
 }

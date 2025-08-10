@@ -953,3 +953,404 @@ bq25628e_therm_curr_t Adafruit_BQ25628E::getWarmThermistorCurrent() {
   
   return (bq25628e_therm_curr_t)ts_iset_warm_bits.read();
 }
+
+/*!
+ *    @brief  Gets combined charger status flags from both status registers
+ *    @return 16-bit status flags: bits 15:8 = REG0x1E, bits 7:0 = REG0x1D
+ */
+uint16_t Adafruit_BQ25628E::getChargerStatusFlags() {
+  // Read REG0x1D (Charger Status 0)
+  Adafruit_BusIO_Register status0_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_STATUS_0, 1);
+  uint8_t status0 = status0_reg.read();
+  
+  // Read REG0x1E (Charger Status 1)
+  Adafruit_BusIO_Register status1_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_STATUS_1, 1);
+  uint8_t status1 = status1_reg.read();
+  
+  // Combine into 16-bit value: high byte = status1, low byte = status0
+  return ((uint16_t)status1 << 8) | status0;
+}
+
+/*!
+ *    @brief  Gets fault status flags from REG0x1F
+ *    @return 8-bit fault status flags from REG0x1F_FAULT_Status_0
+ */
+uint8_t Adafruit_BQ25628E::getFaultStatusFlags() {
+  // Read REG0x1F (FAULT Status 0)
+  Adafruit_BusIO_Register fault_status_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_FAULT_STATUS_0, 1);
+  
+  return fault_status_reg.read();
+}
+
+/*!
+ *    @brief  Gets combined charger flag registers (clears flags on read)
+ *    @return 16-bit flag values: bits 15:8 = REG0x21, bits 7:0 = REG0x20
+ *    @note   Reading this function clears all flag bits automatically
+ */
+uint16_t Adafruit_BQ25628E::getChargerFlags() {
+  // Read REG0x20 (Charger Flag 0) - clears flags on read
+  Adafruit_BusIO_Register flag0_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_FLAG_0, 1);
+  uint8_t flag0 = flag0_reg.read();
+  
+  // Read REG0x21 (Charger Flag 1) - clears flags on read
+  Adafruit_BusIO_Register flag1_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_FLAG_1, 1);
+  uint8_t flag1 = flag1_reg.read();
+  
+  // Combine into 16-bit value: high byte = flag1, low byte = flag0
+  return ((uint16_t)flag1 << 8) | flag0;
+}
+
+/*!
+ *    @brief  Gets fault flag register (clears flags on read)
+ *    @return 8-bit fault flag values from REG0x22_FAULT_Flag_0
+ *    @note   Reading this function clears all fault flag bits automatically
+ */
+uint8_t Adafruit_BQ25628E::getFaultFlags() {
+  // Read REG0x22 (FAULT Flag 0) - clears flags on read
+  Adafruit_BusIO_Register fault_flag_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_FAULT_FLAG_0, 1);
+  
+  return fault_flag_reg.read();
+}
+
+/*!
+ *    @brief  Sets interrupt mask for all interrupt sources
+ *    @param  mask
+ *            32-bit mask value (1 = disable interrupt, 0 = enable interrupt)
+ *    @return True if successful, otherwise false.
+ *    @note   Use BQ25628E_INT_MASK_* defines to construct the mask
+ */
+bool Adafruit_BQ25628E::setInterruptMask(uint32_t mask) {
+  // Extract individual register values from 32-bit mask
+  // Mask0 (REG0x23): bits 6:0 (ADC_DONE, TREG, VSYS, IINDPM, VINDPM, SAFETY_TMR, WD)
+  uint8_t mask0 = (mask >> 0) & 0x7F;
+  
+  // Mask1 (REG0x24): bits 3,0 (CHG=bit11, VBUS=bit8)
+  uint8_t mask1 = 0;
+  if (mask & BQ25628E_INT_MASK_VBUS) mask1 |= BQ25628E_MASK1_VBUS_MASK;
+  if (mask & BQ25628E_INT_MASK_CHG) mask1 |= BQ25628E_MASK1_CHG_MASK;
+  
+  // FMask (REG0x25): bits 7,6,5,3,0 (VBUS_FAULT, BAT_FAULT, SYS_FAULT, TSHUT, TS)
+  uint8_t fmask = 0;
+  if (mask & BQ25628E_INT_MASK_TS) fmask |= BQ25628E_FMASK_TS_MASK;
+  if (mask & BQ25628E_INT_MASK_TSHUT) fmask |= BQ25628E_FMASK_TSHUT_MASK;
+  if (mask & BQ25628E_INT_MASK_SYS_FAULT) fmask |= BQ25628E_FMASK_SYS_FAULT_MASK;
+  if (mask & BQ25628E_INT_MASK_BAT_FAULT) fmask |= BQ25628E_FMASK_BAT_FAULT_MASK;
+  if (mask & BQ25628E_INT_MASK_VBUS_FAULT) fmask |= BQ25628E_FMASK_VBUS_FAULT_MASK;
+  
+  // Write to all three mask registers
+  Adafruit_BusIO_Register mask0_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_MASK_0, 1);
+  Adafruit_BusIO_Register mask1_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_MASK_1, 1);
+  Adafruit_BusIO_Register fmask_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_FAULT_MASK_0, 1);
+  
+  return mask0_reg.write(mask0) && mask1_reg.write(mask1) && fmask_reg.write(fmask);
+}
+
+/*!
+ *    @brief  Gets interrupt mask for all interrupt sources
+ *    @return 32-bit mask value (1 = interrupt disabled, 0 = interrupt enabled)
+ */
+uint32_t Adafruit_BQ25628E::getInterruptMask() {
+  // Read all three mask registers
+  Adafruit_BusIO_Register mask0_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_MASK_0, 1);
+  Adafruit_BusIO_Register mask1_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_CHARGER_MASK_1, 1);
+  Adafruit_BusIO_Register fmask_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_FAULT_MASK_0, 1);
+  
+  uint8_t mask0 = mask0_reg.read();
+  uint8_t mask1 = mask1_reg.read();
+  uint8_t fmask = fmask_reg.read();
+  
+  // Combine into 32-bit mask
+  uint32_t combined_mask = 0;
+  
+  // Mask0 (REG0x23): bits 6:0 map directly to bits 6:0
+  combined_mask |= (mask0 & 0x7F);
+  
+  // Mask1 (REG0x24): bits 3,0 map to specific bit positions
+  if (mask1 & BQ25628E_MASK1_VBUS_MASK) combined_mask |= BQ25628E_INT_MASK_VBUS;
+  if (mask1 & BQ25628E_MASK1_CHG_MASK) combined_mask |= BQ25628E_INT_MASK_CHG;
+  
+  // FMask (REG0x25): bits 7,6,5,3,0 map to specific bit positions  
+  if (fmask & BQ25628E_FMASK_TS_MASK) combined_mask |= BQ25628E_INT_MASK_TS;
+  if (fmask & BQ25628E_FMASK_TSHUT_MASK) combined_mask |= BQ25628E_INT_MASK_TSHUT;
+  if (fmask & BQ25628E_FMASK_SYS_FAULT_MASK) combined_mask |= BQ25628E_INT_MASK_SYS_FAULT;
+  if (fmask & BQ25628E_FMASK_BAT_FAULT_MASK) combined_mask |= BQ25628E_INT_MASK_BAT_FAULT;
+  if (fmask & BQ25628E_FMASK_VBUS_FAULT_MASK) combined_mask |= BQ25628E_INT_MASK_VBUS_FAULT;
+  
+  return combined_mask;
+}
+
+/*!
+ *    @brief  Enables or disables ADC conversion
+ *    @param  enable
+ *            True to enable ADC, false to disable
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setADCEnable(bool enable) {
+  Adafruit_BusIO_Register adc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits adc_enable = Adafruit_BusIO_RegisterBits(&adc_control_reg, 1, 7);
+  
+  return adc_enable.write(enable);
+}
+
+/*!
+ *    @brief  Gets ADC enable status
+ *    @return True if ADC is enabled, false otherwise
+ */
+bool Adafruit_BQ25628E::getADCEnable() {
+  Adafruit_BusIO_Register adc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits adc_enable = Adafruit_BusIO_RegisterBits(&adc_control_reg, 1, 7);
+  
+  return adc_enable.read();
+}
+
+/*!
+ *    @brief  Sets ADC conversion mode
+ *    @param  one_shot
+ *            True for one-shot conversion, false for continuous conversion
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setADCOneShot(bool one_shot) {
+  Adafruit_BusIO_Register adc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits adc_rate = Adafruit_BusIO_RegisterBits(&adc_control_reg, 1, 6);
+  
+  return adc_rate.write(one_shot);
+}
+
+/*!
+ *    @brief  Gets ADC conversion mode
+ *    @return True if one-shot mode, false if continuous mode
+ */
+bool Adafruit_BQ25628E::getADCOneShot() {
+  Adafruit_BusIO_Register adc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits adc_rate = Adafruit_BusIO_RegisterBits(&adc_control_reg, 1, 6);
+  
+  return adc_rate.read();
+}
+
+/*!
+ *    @brief  Sets ADC sample rate (bit resolution)
+ *    @param  sample_rate
+ *            Sample rate setting (see bq25628e_adc_sample_t)
+ *    @return True if successful, otherwise false.
+ */
+bool Adafruit_BQ25628E::setADCSampleRate(bq25628e_adc_sample_t sample_rate) {
+  Adafruit_BusIO_Register adc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits adc_sample = Adafruit_BusIO_RegisterBits(&adc_control_reg, 2, 4);
+  
+  return adc_sample.write(sample_rate);
+}
+
+/*!
+ *    @brief  Gets ADC sample rate setting
+ *    @return Current sample rate setting (see bq25628e_adc_sample_t)
+ */
+bq25628e_adc_sample_t Adafruit_BQ25628E::getADCSampleRate() {
+  Adafruit_BusIO_Register adc_control_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_CONTROL, 1);
+  Adafruit_BusIO_RegisterBits adc_sample = Adafruit_BusIO_RegisterBits(&adc_control_reg, 2, 4);
+  
+  return (bq25628e_adc_sample_t)adc_sample.read();
+}
+
+/*!
+ *    @brief  Sets ADC function disable flags
+ *    @param  disable_flags
+ *            Bitfield of ADC functions to disable (use BQ25628E_ADC_DIS_* flags)
+ *            Setting a bit to 1 disables that ADC function
+ *            Setting a bit to 0 enables that ADC function
+ *    @return True if successful, otherwise false.
+ *    @note   Use BQ25628E_ADC_DIS_* defines to construct the disable_flags
+ */
+bool Adafruit_BQ25628E::setDisableADC(uint8_t disable_flags) {
+  Adafruit_BusIO_Register adc_func_disable_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_FUNCTION_DISABLE_0, 1);
+  
+  return adc_func_disable_reg.write(disable_flags);
+}
+
+/*!
+ *    @brief  Gets ADC function disable flags
+ *    @return Bitfield of disabled ADC functions (1 = disabled, 0 = enabled)
+ *    @note   Use BQ25628E_ADC_DIS_* defines to check individual flags
+ */
+uint8_t Adafruit_BQ25628E::getDisableADC() {
+  Adafruit_BusIO_Register adc_func_disable_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_ADC_FUNCTION_DISABLE_0, 1);
+  
+  return adc_func_disable_reg.read();
+}
+
+/*!
+ *    @brief  Gets IBUS current measurement from ADC
+ *    @return Current in Amperes (positive = from VBUS to PMID, negative = reverse)
+ *    @note   Requires ADC to be enabled. Returns 2's complement 15-bit value
+ *            converted to float with 2mA resolution
+ */
+float Adafruit_BQ25628E::getIBUScurrent() {
+  // Read 16-bit IBUS ADC register (little endian)
+  Adafruit_BusIO_Register ibus_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_IBUS_ADC, 2);
+  
+  uint16_t raw_value = ibus_adc_reg.read();
+  
+  // Extract 15-bit ADC value from bits 15:1 (shift right by 1)
+  uint16_t adc_15bit = raw_value >> 1;
+  
+  // Convert from 15-bit 2's complement to signed 16-bit
+  int16_t signed_value;
+  if (adc_15bit & 0x4000) {
+    // Negative value - extend sign bit
+    signed_value = (int16_t)(adc_15bit | 0x8000);
+  } else {
+    // Positive value
+    signed_value = (int16_t)adc_15bit;
+  }
+  
+  // Convert to Amperes: 2mA per step
+  return (float)signed_value * 0.002f;
+}
+
+/*!
+ *    @brief  Gets IBAT current measurement from ADC
+ *    @return Current in Amperes (positive = charging, negative = discharging)
+ *    @note   Requires ADC to be enabled. Returns 2's complement 14-bit value
+ *            converted to float with 4mA resolution. Range: -7.5A to +4.0A
+ */
+float Adafruit_BQ25628E::getIBATcurrent() {
+  // Read 16-bit IBAT ADC register (little endian)
+  Adafruit_BusIO_Register ibat_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_IBAT_ADC, 2);
+  
+  uint16_t raw_value = ibat_adc_reg.read();
+  
+  // Extract 14-bit ADC value from bits 15:2 (shift right by 2)
+  uint16_t adc_14bit = raw_value >> 2;
+  
+  // Convert from 14-bit 2's complement to signed 16-bit
+  int16_t signed_value;
+  if (adc_14bit & 0x2000) {
+    // Negative value - extend sign bit
+    signed_value = (int16_t)(adc_14bit | 0xC000);
+  } else {
+    // Positive value
+    signed_value = (int16_t)adc_14bit;
+  }
+  
+  // Convert to Amperes: 4mA per step
+  return (float)signed_value * 0.004f;
+}
+
+/*!
+ *    @brief  Gets VBUS voltage measurement from ADC
+ *    @return Voltage in Volts. Range: 0V to 18V
+ *    @note   Requires ADC to be enabled. 3.97mV resolution
+ */
+float Adafruit_BQ25628E::getVBUSvoltage() {
+  // Read 16-bit VBUS ADC register (little endian)
+  Adafruit_BusIO_Register vbus_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_VBUS_ADC, 2);
+  
+  uint16_t raw_value = vbus_adc_reg.read();
+  
+  // Extract voltage value from bits 15:2 (shift right by 2)
+  uint16_t voltage_value = raw_value >> 2;
+  
+  // Convert to Volts: 3.97mV per step
+  return (float)voltage_value * 0.00397f;
+}
+
+/*!
+ *    @brief  Gets VPMID voltage measurement from ADC
+ *    @return Voltage in Volts. Range: 0V to 18V
+ *    @note   Requires ADC to be enabled. 3.97mV resolution
+ */
+float Adafruit_BQ25628E::getVPMIDvoltage() {
+  // Read 16-bit VPMID ADC register (little endian)
+  Adafruit_BusIO_Register vpmid_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_VPMID_ADC, 2);
+  
+  uint16_t raw_value = vpmid_adc_reg.read();
+  
+  // Extract voltage value from bits 15:2 (shift right by 2)
+  uint16_t voltage_value = raw_value >> 2;
+  
+  // Convert to Volts: 3.97mV per step
+  return (float)voltage_value * 0.00397f;
+}
+
+/*!
+ *    @brief  Gets VBAT voltage measurement from ADC
+ *    @return Voltage in Volts. Range: 0V to 5.572V
+ *    @note   Requires ADC to be enabled. 1.99mV resolution
+ */
+float Adafruit_BQ25628E::getVBATvoltage() {
+  // Read 16-bit VBAT ADC register (little endian)
+  Adafruit_BusIO_Register vbat_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_VBAT_ADC, 2);
+  
+  uint16_t raw_value = vbat_adc_reg.read();
+  
+  // Extract voltage value from bits 15:1 (shift right by 1)
+  uint16_t voltage_value = raw_value >> 1;
+  
+  // Convert to Volts: 1.99mV per step
+  return (float)voltage_value * 0.00199f;
+}
+
+/*!
+ *    @brief  Gets VSYS voltage measurement from ADC
+ *    @return Voltage in Volts. Range: 0V to 5.572V
+ *    @note   Requires ADC to be enabled. 1.99mV resolution
+ */
+float Adafruit_BQ25628E::getVSYSvoltage() {
+  // Read 16-bit VSYS ADC register (little endian)
+  Adafruit_BusIO_Register vsys_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_VSYS_ADC, 2);
+  
+  uint16_t raw_value = vsys_adc_reg.read();
+  
+  // Extract voltage value from bits 15:1 (shift right by 1)
+  uint16_t voltage_value = raw_value >> 1;
+  
+  // Convert to Volts: 1.99mV per step
+  return (float)voltage_value * 0.00199f;
+}
+
+/*!
+ *    @brief  Gets thermistor reading as percentage of bias reference
+ *    @return Percentage (0-100%). Range: 0% to 98.31%
+ *    @note   Requires ADC to be enabled and TS pin bias reference active
+ *            Uses bits 11:0 with 0.0961% resolution
+ */
+float Adafruit_BQ25628E::getThermistorPercent() {
+  // Read 16-bit TS ADC register (little endian)
+  Adafruit_BusIO_Register ts_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_TS_ADC, 2);
+  
+  uint16_t raw_value = ts_adc_reg.read();
+  
+  // Extract 12-bit value from bits 11:0 (no shift needed)
+  uint16_t ts_value = raw_value & 0x0FFF;
+  
+  // Convert to percentage: 0.0961% per step
+  return (float)ts_value * 0.0961f;
+}
+
+/*!
+ *    @brief  Gets die temperature measurement from ADC
+ *    @return Temperature in Celsius. Range: -40°C to +140°C
+ *    @note   Requires ADC to be enabled. Returns 2's complement 12-bit value
+ *            with 0.5°C resolution using bits 11:0
+ */
+float Adafruit_BQ25628E::getDieTempC() {
+  // Read 16-bit TDIE ADC register (little endian)
+  Adafruit_BusIO_Register tdie_adc_reg = Adafruit_BusIO_Register(i2c_dev, BQ25628E_REG_TDIE_ADC, 2);
+  
+  uint16_t raw_value = tdie_adc_reg.read();
+  
+  // Extract 12-bit value from bits 11:0 (no shift needed)
+  uint16_t temp_12bit = raw_value & 0x0FFF;
+  
+  // Convert from 12-bit 2's complement to signed 16-bit
+  int16_t signed_value;
+  if (temp_12bit & 0x0800) {
+    // Negative value - extend sign bit
+    signed_value = (int16_t)(temp_12bit | 0xF000);
+  } else {
+    // Positive value
+    signed_value = (int16_t)temp_12bit;
+  }
+  
+  // Convert to Celsius: 0.5°C per step
+  return (float)signed_value * 0.5f;
+}
